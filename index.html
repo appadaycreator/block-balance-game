@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ブロックバランス - 物理演算積み木ゲーム | 創造力とバランス感覚を育む知育アプリ</title>
+    <meta name="description" content="物理演算で遊ぶ積み木シミュレーター「ブロックバランス」。リアルな物理演算でブロックを積み上げて、バランス感覚と創造力を育成。無料でプレイできる知育Webアプリ。">
+    <meta name="keywords" content="積み木,物理演算,ゲーム,知育,バランス,創造力,子供,教育,パズル,シミュレーター">
+    <meta name="author" content="Block Balance">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://appadaycreator.github.io/block-balance-game/">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://appadaycreator.github.io/block-balance-game/">
+    <meta property="og:title" content="ブロックバランス - 物理演算積み木ゲーム">
+    <meta property="og:description" content="物理演算で遊ぶ積み木シミュレーター。創造力とバランス感覚を育む知育アプリ。">
+    <meta property="og:image" content="https://appadaycreator.github.io/block-balance-game/assets/ogp-image.jpg">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://appadaycreator.github.io/block-balance-game/">
+    <meta property="twitter:title" content="ブロックバランス - 物理演算積み木ゲーム">
+    <meta property="twitter:description" content="物理演算で遊ぶ積み木シミュレーター。創造力とバランス感覚を育む知育アプリ。">
+    <meta property="twitter:image" content="https://appadaycreator.github.io/block-balance-game/assets/ogp-image.jpg">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3B82F6">
+    <link rel="apple-touch-icon" href="assets/icon-192x192.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='20' width='8' height='8' fill='%23FF6B6B'/%3E%3Crect x='12' y='16' width='8' height='12' fill='%234ECDC4'/%3E%3Crect x='20' y='12' width='8' height='16' fill='%23FFE66D'/%3E%3C/svg%3E">
+    
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-TXQGZRF9');</script>
+    <!-- End Google Tag Manager -->
+    
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    
+    <style>
+        .font-size-xs { font-size: 0.75rem; }
+        .font-size-sm { font-size: 0.875rem; }
+        .font-size-base { font-size: 1rem; }
+        .font-size-lg { font-size: 1.125rem; }
+        .font-size-xl { font-size: 1.5rem; }
+        
+        .block-item {
+            transition: all 0.3s ease;
+            cursor: grab;
+            user-select: none;
+        }
+        
+        .block-item:active {
+            cursor: grabbing;
+        }
+        
+        .block-item.dragging {
+            opacity: 0.7;
+            transform: scale(1.1);
+        }
+        
+        .game-canvas {
+            border: 2px solid #e5e7eb;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .placed-block {
+            position: absolute;
+            transition: all 0.1s ease;
+            border: 1px solid #374151;
+            border-radius: 2px;
+        }
+        
+        .sidebar-transition {
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .menu-overlay {
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        .block-red { background-color: #ef4444; }
+        .block-blue { background-color: #3b82f6; }
+        .block-green { background-color: #10b981; }
+        .block-yellow { background-color: #f59e0b; }
+        .block-purple { background-color: #8b5cf6; }
+        .block-pink { background-color: #ec4899; }
+        
+        .score-animation {
+            animation: bounce 0.5s ease-in-out;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        .falling-animation {
+            animation: fall 1s ease-in;
+        }
+        
+        @keyframes fall {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(100px) rotate(360deg); opacity: 0; }
+        }
+        
+        .mobile-menu-slide {
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .mobile-menu-slide.active {
+            transform: translateX(0);
+        }
+        
+        .affiliate-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        .game-stats {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .hidden { display: none; }
+        .block { display: block; }
+        
+        @media (max-width: 768px) {
+            .desktop-only { display: none !important; }
+            .mobile-only { display: block !important; }
+        }
+        
+        @media (min-width: 769px) {
+            .desktop-only { display: block !important; }
+            .mobile-only { display: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TXQGZRF9"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    
+    <div id="app" class="min-h-screen">
+        <!-- Header (Desktop) -->
+        <header class="desktop-only bg-white shadow-sm border-b">
+            <div class="container mx-auto px-4 py-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="text-2xl font-bold text-blue-600">
+                            <i class="fas fa-cubes mr-2"></i>
+                            <span data-i18n="app_name">ブロックバランス</span>
+                        </div>
+                    </div>
+                    <nav class="flex items-center space-x-6">
+                        <a href="#" onclick="showPage('game')" class="text-gray-700 hover:text-blue-600 transition-colors" data-i18n="nav_game">ゲーム</a>
+                        <a href="#" onclick="showPage('howto')" class="text-gray-700 hover:text-blue-600 transition-colors" data-i18n="nav_howto">使い方</a>
+                        <a href="#" onclick="showPage('terms')" class="text-gray-700 hover:text-blue-600 transition-colors" data-i18n="nav_terms">利用規約</a>
+                        <a href="#" onclick="showPage('privacy')" class="text-gray-700 hover:text-blue-600 transition-colors" data-i18n="nav_privacy">プライバシーポリシー</a>
+                        <a href="#" onclick="showPage('contact')" class="text-gray-700 hover:text-blue-600 transition-colors" data-i18n="nav_contact">お問い合わせ</a>
+                        <div class="flex items-center space-x-2">
+                            <select id="languageSelect" class="border rounded px-2 py-1 text-sm">
+                                <option value="ja">日本語</option>
+                                <option value="en">English</option>
+                            </select>
+                            <select id="fontSizeSelect" class="border rounded px-2 py-1 text-sm">
+                                <option value="xs">極小</option>
+                                <option value="sm">小</option>
+                                <option value="base" selected>標準</option>
+                                <option value="lg">大</option>
+                                <option value="xl">特大</option>
+                            </select>
+                        </div>
+                    </nav>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Mobile Header -->
+        <header class="mobile-only bg-white shadow-sm border-b">
+            <div class="flex items-center justify-between px-4 py-3">
+                <div class="text-xl font-bold text-blue-600">
+                    <i class="fas fa-cubes mr-2"></i>
+                    <span data-i18n="app_name">ブロックバランス</span>
+                </div>
+                <button id="mobileMenuToggle" class="text-gray-700 hover:text-blue-600">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </header>
+        
+        <!-- Mobile Menu Overlay -->
+        <div id="mobileMenuOverlay" class="mobile-only fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+        
+        <!-- Mobile Sidebar -->
+        <div id="mobileSidebar" class="mobile-only fixed top-0 right-0 h-full w-80 bg-white shadow-lg z-50 mobile-menu-slide">
+            <div class="p-4 border-b">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-semibold" data-i18n="menu">メニュー</h2>
+                    <button id="closeMobileMenu" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <nav class="p-4">
+                <div class="space-y-4">
+                    <a href="#" onclick="showPage('game')" class="block text-gray-700 hover:text-blue-600 transition-colors" data-i18n="nav_game">ゲーム</a>
+                    <a href="#" onclick="showPage('howto')" class="block text-gray-700 hover:text-blue-600 transition-colors" data-i18n="nav_howto">使い方</a>
+                    <a href="#" onclick="showPage('terms')" class="block text-gray-700 hover:text-blue-600 transition-colors" data-i18n="nav_terms">利用規約</a>
+                    <a href="#" onclick="showPage('privacy')" class="block text-gray-700 hover:text-blue-600 transition-colors" data-i18n="nav_privacy">プライバシーポリシー</a>
+                    <a href="#" onclick="showPage('contact')" class="block text-gray-700 hover:text-blue-600 transition-colors" data-i18n="nav_contact">お問い合わせ</a>
+                    <div class="border-t pt-4">
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="language">言語</label>
+                                <select id="mobileLanguageSelect" class="w-full border rounded px-2 py-1 text-sm">
+                                    <option value="ja">日本語</option>
+                                    <option value="en">English</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="font_size">文字サイズ</label>
+                                <select id="mobileFontSizeSelect" class="w-full border rounded px-2 py-1 text-sm">
+                                    <option value="xs">極小</option>
+                                    <option value="sm">小</option>
+                                    <option value="base" selected>標準</option>
+                                    <option value="lg">大</option>
+                                    <option value="xl">特大</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+        
+        <div class="flex">
+            <!-- Desktop Sidebar -->
+            <aside class="desktop-only w-64 bg-white shadow-sm border-r min-h-screen">
+                <div class="p-4">
+                    <h2 class="text-lg font-semibold mb-4" data-i18n="game_controls">ゲームコントロール</h2>
+                    <div class="space-y-4">
+                        <div class="game-stats">
+                            <div class="text-sm text-gray-600 mb-2" data-i18n="current_score">現在のスコア</div>
+                            <div id="scoreDisplay" class="text-2xl font-bold text-blue-600">0</div>
+                        </div>
+                        <div class="game-stats">
+                            <div class="text-sm text-gray-600 mb-2" data-i18n="height">高さ</div>
+                            <div id="heightDisplay" class="text-xl font-semibold text-green-600">0</div>
+                        </div>
+                        <div class="game-stats">
+                            <div class="text-sm text-gray-600 mb-2" data-i18n="blocks_used">使用ブロック数</div>
+                            <div id="blocksUsedDisplay" class="text-xl font-semibold text-purple-600">0</div>
+                        </div>
+                        <div class="space-y-2">
+                            <button id="resetGame" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded transition-colors">
+                                <i class="fas fa-redo mr-2"></i>
+                                <span data-i18n="reset_game">ゲームリセット</span>
+                            </button>
+                            <button id="shareResult" class="w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded transition-colors">
+                                <i class="fas fa-share mr-2"></i>
+                                <span data-i18n="share_result">結果をシェア</span>
+                            </button>
+                            <button id="showHistory" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition-colors">
+                                <i class="fas fa-history mr-2"></i>
+                                <span data-i18n="show_history">履歴を表示</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+            
+            <!-- Main Content -->
+            <main class="flex-1 p-4">
+                <!-- Game Page -->
+                <div id="gamePage" class="page">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="bg-white rounded-lg shadow-sm p-6">
+                            <div class="text-center mb-6">
+                                <h1 class="text-3xl font-bold text-gray-800 mb-2" data-i18n="game_title">ブロックバランス</h1>
+                                <p class="text-gray-600" data-i18n="game_description">物理演算で遊ぶ積み木ゲーム！バランス感覚と創造力を養おう</p>
+                            </div>
+                            
+                            <!-- Mobile Game Stats -->
+                            <div class="mobile-only grid grid-cols-3 gap-4 mb-6">
+                                <div class="text-center">
+                                    <div class="text-sm text-gray-600" data-i18n="current_score">スコア</div>
+                                    <div id="mobileScoreDisplay" class="text-lg font-bold text-blue-600">0</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-sm text-gray-600" data-i18n="height">高さ</div>
+                                    <div id="mobileHeightDisplay" class="text-lg font-bold text-green-600">0</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-sm text-gray-600" data-i18n="blocks_used">ブロック数</div>
+                                    <div id="mobileBlocksUsedDisplay" class="text-lg font-bold text-purple-600">0</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Game Canvas -->
+                            <div class="game-canvas w-full h-96 mb-6 relative" id="gameCanvas">
+                                <div class="absolute inset-0 flex items-center justify-center text-gray-500">
+                                    <div class="text-center">
+                                        <i class="fas fa-cubes text-4xl mb-2"></i>
+                                        <p data-i18n="drag_blocks">ブロックをドラッグして積み上げよう！</p>
+                                    </div>
+                                </div>
+                                <!-- Ground line -->
+                                <div class="absolute bottom-0 left-0 right-0 h-1 bg-gray-400"></div>
+                            </div>
+                            
+                            <!-- Block Palette -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold mb-3" data-i18n="block_palette">ブロックパレット</h3>
+                                <div class="grid grid-cols-6 gap-2" id="blockPalette">
+                                    <div class="block-item block-red w-12 h-12 rounded cursor-pointer hover:scale-105 transition-transform" data-color="red" data-width="48" data-height="48">
+                                        <div class="w-full h-full flex items-center justify-center text-white font-bold text-xs">正方形</div>
+                                    </div>
+                                    <div class="block-item block-blue w-16 h-8 rounded cursor-pointer hover:scale-105 transition-transform" data-color="blue" data-width="64" data-height="32">
+                                        <div class="w-full h-full flex items-center justify-center text-white font-bold text-xs">横長</div>
+                                    </div>
+                                    <div class="block-item block-green w-8 h-16 rounded cursor-pointer hover:scale-105 transition-transform" data-color="green" data-width="32" data-height="64">
+                                        <div class="w-full h-full flex items-center justify-center text-white font-bold text-xs">縦長</div>
+                                    </div>
+                                    <div class="block-item block-yellow w-12 h-6 rounded cursor-pointer hover:scale-105 transition-transform" data-color="yellow" data-width="48" data-height="24">
+                                        <div class="w-full h-full flex items-center justify-center text-white font-bold text-xs">平べったい</div>
+                                    </div>
+                                    <div class="block-item block-purple w-10 h-10 rounded cursor-pointer hover:scale-105 transition-transform" data-color="purple" data-width="40" data-height="40">
+                                        <div class="w-full h-full flex items-center justify-center text-white font-bold text-xs">小</div>
+                                    </div>
+                                    <div class="block-item block-pink w-14 h-14 rounded cursor-pointer hover:scale-105 transition-transform" data-color="pink" data-width="56" data-height="56">
+                                        <div class="w-full h-full flex items-center justify-center text-white font-bold text-xs">大</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Mobile Controls -->
+                            <div class="mobile-only flex space-x-2 mb-6">
+                                <button id="mobileResetGame" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded transition-colors">
+                                    <i class="fas fa-redo mr-2"></i>
+                                    <span data-i18n="reset_game">リセット</span>
+                                </button>
+                                <button id="mobileShareResult" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded transition-colors">
+                                    <i class="fas fa-share mr-2"></i>
+                                    <span data-i18n="share_result">シェア</span>
+                                </button>
+                            </div>
+                            
+                            <!-- Affiliate Banner -->
+                            <div class="affiliate-banner">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="font-semibold mb-1" data-i18n="recommended_products">おすすめ商品</h4>
+                                        <p class="text-sm opacity-90" data-i18n="affiliate_description">実際の積み木で遊んでみませんか？</p>
+                                    </div>
+                                    <a href="#" class="bg-white text-purple-600 px-4 py-2 rounded hover:bg-gray-100 transition-colors" data-i18n="view_products">商品を見る</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- How to Use Page -->
+                <div id="howtoPage" class="page hidden">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="bg-white rounded-lg shadow-sm p-6">
+                            <h1 class="text-3xl font-bold text-gray-800 mb-6" data-i18n="howto_title">使い方</h1>
+                            
+                            <div class="space-y-8">
+                                <section>
+                                    <h2 class="text-xl font-semibold mb-4" data-i18n="basic_controls">基本操作</h2>
+                                    <div class="space-y-3">
+                                        <div class="flex items-start space-x-3">
+                                            <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
+                                            <div>
+                                                <h3 class="font-semibold" data-i18n="step1_title">ブロックを選択</h3>
+                                                <p class="text-gray-600" data-i18n="step1_description">画面下のブロックパレットから好きなブロックを選んでください。</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start space-x-3">
+                                            <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
+                                            <div>
+                                                <h3 class="font-semibold" data-i18n="step2_title">ドラッグ＆ドロップ</h3>
+                                                <p class="text-gray-600" data-i18n="step2_description">選んだブロックをゲーム画面内にドラッグしてバランスよく配置しましょう。</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start space-x-3">
+                                            <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
+                                            <div>
+                                                <h3 class="font-semibold" data-i18n="step3_title">バランスを保つ</h3>
+                                                <p class="text-gray-600" data-i18n="step3_description">ブロックが崩れないようにバランスを考えながら積み上げてください。</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                                
+                                <section>
+                                    <h2 class="text-xl font-semibold mb-4" data-i18n="scoring_system">スコアリングシステム</h2>
+                                    <div class="bg-gray-50 p-4 rounded-lg">
+                                        <ul class="space-y-2">
+                                            <li class="flex items-center space-x-2">
+                                                <i class="fas fa-star text-yellow-500"></i>
+                                                <span data-i18n="scoring_height">高さ：1ブロック分の高さにつき10ポイント</span>
+                                            </li>
+                                            <li class="flex items-center space-x-2">
+                                                <i class="fas fa-star text-yellow-500"></i>
+                                                <span data-i18n="scoring_balance">バランス：安定したバランスにつきボーナス</span>
+                                            </li>
+                                            <li class="flex items-center space-x-2">
+                                                <i class="fas fa-star text-yellow-500"></i>
+                                                <span data-i18n="scoring_creativity">創造性：ユニークな形状にボーナス</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </section>
+                                
+                                <section>
+                                    <h2 class="text-xl font-semibold mb-4" data-i18n="tips_title">上達のコツ</h2>
+                                    <div class="grid md:grid-cols-2 gap-4">
+                                        <div class="bg-blue-50 p-4 rounded-lg">
+                                            <h3 class="font-semibold text-blue-800 mb-2" data-i18n="tip1_title">重心を意識する</h3>
+                                            <p class="text-blue-700 text-sm" data-i18n="tip1_description">ブロックの重心を考えて、安定する位置に配置しましょう。</p>
+                                        </div>
+                                        <div class="bg-green-50 p-4 rounded-lg">
+                                            <h3 class="font-semibold text-green-800 mb-2" data-i18n="tip2_title">土台を固める</h3>
+                                            <p class="text-green-700 text-sm" data-i18n="tip2_description">まず安定した土台を作ってから、上に積み上げていくのがおすすめです。</p>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Terms Page -->
+                <div id="termsPage" class="page hidden">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="bg-white rounded-lg shadow-sm p-6">
+                            <h1 class="text-3xl font-bold text-gray-800 mb-6" data-i18n="terms_title">利用規約</h1>
+                            
+                            <div class="space-y-6">
+                                <section>
+                                    <h2 class="text-xl font-semibold mb-3" data-i18n="terms_section1">第1条（本規約の適用）</h2>
+                                    <p class="text-gray-700" data-i18n="terms_content1">本規約は、「ブロックバランス」（以下「本サービス」）の利用に関する条件を定めるものです。利用者は本規約に同意の上、本サービスを利用するものとします。</p>
+                                </section>
+                                
+                                <section>
+                                    <h2 class="text-xl font-semibold mb-3" data-i18n="terms_section2">第2条（利用条件）</h2>
+                                    <p class="text-gray-700" data-i18n="terms_content2">本サービスは無料で提供されます。利用者は適切な環境でサービスを利用し、他の利用者や第三者に迷惑をかけないよう配慮してください。</p>
+                                </section>
+                                
+                                <section>
+                                    <h2 class="text-xl font-semibold mb-3" data-i18n="terms_section3">第3条（禁止事項）</h2>
+                                    <div class="text-gray-700">
+                                        <p class="mb-2" data-i18n="terms_content3_intro">利用者は以下の行為を行ってはならないものとします：</p>
+                                        <ul class="list-disc list-inside space-y-1 ml-4">
+                                            <li data-i18n="terms_prohibited1">本サービスの改変、解析、リバースエンジニアリング</li>
+                                            <li data-i18n="terms_prohibited2">不正なアクセスやシステムへの攻撃</li>
+                                            <li data-i18n="terms_prohibited3">他の利用者への嫌がらせや迷惑行為</li>
+                                            <li data-i18n="terms_prohibited4">法律や公序良俗に反する行為</li>
+                                        </ul>
+                                    </div>
+                                </section>
+                                
+                                <section>
+                                    <h2 class="text-xl font-semibold mb-3" data-i18n="terms_section4">第4条（免責事項）</h2>
+                                    <p class="text-gray-700" data-i18n="terms_content4">本サービスの利用により生じた損害について、運営者は一切の責任を負いません。本サービスは現状有姿で提供され、動作の保証はいたしません。</p>
+                                </section>
+                                
+                                <section>
+                                    <h2 class="text-xl font-semibold mb-3" data-i18n="terms_section5">第5条（規約の変更）</h2>
+                                    <p class="text-gray-700" data-i18n="terms_content5">本規約は予告なく変更される場合があります。変更後の規約は本サービス上で公開された時点で効力を発生します。</p>
+                                </section>
+                                
+                                <div class="text-sm text-gray-500 mt-8">
+                                    <p data-i18n="terms_updated">最終更新日：2024年1月1日</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Privacy Page -->
+                <div id="privacyPage" class="page hidden">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="bg-white rounded-lg shadow-sm p-6">
+                            <h1 class="text-3xl font-bold text-gray-800 mb-6" data-i18n="privacy_title">プライバシーポリシー</h1>
+                            
+                            <div class="space-y-6">
+                                <section>
+                                    <h2 class="text-xl font-semibold mb-3" data-i18n="privacy_section1">個人情報の収集について</h2>
+                                    <p class="text-gray-700" data-i18n="privacy_content1">本サービスでは、利用者の個人情報を収集することはありません。ただし、ゲームの進行状況やスコアなどの情報はブラウザのローカルストレージに保存されます。</p>
+                                </section>
+                                
+                                <section>
+                                    <h2 class="text-xl font-semibold mb-3" data-i18n="privacy_section2">アクセス解析について</h2>
+                                    <p class="text-gray-700" data-i18n="privacy_content2">本サービスでは、Google Analyticsを使用してアクセス解析を行っています。これは利用者のサービス利用状況を把握し、サービス改善のために行われます。</p>
+                                </section>
+                                
+                                <section>
+                                    <h2 class="text-xl font-semibold mb-3" data-i18n="privacy_section3">Cookieの使用について</h2>
+                                    <p class="text-gray-700" data-i18n="privacy_content3">本サービスでは、利用者の設定（言語設定、文字サイズ設定など）を保存するためにCookieを使用します。これらの情報は利用者のブラウザにのみ保存され、外部に送信されることはありません。</p>
+                                </section>
+                                
+                                <section>
+                                    <h2 class="text-xl font-semibold mb-3" data-i18n="privacy_section4">アフィリエイトプログラムについて</h2>
+                                    <p class="text-gray-700" data-i18n="privacy_content4">本サービスでは、Amazon.co.jpアソシエイトプログラムをはじめとする各種アフィリエイトプログラムに参加しています。これらのプログラムでは、利用者の行動を追跡するためにCookieが使用される場合があります。</p>
+                                </section>
+                                
+                                <section>
+                                    <h2 class="text-xl font-semibold mb-3" data-i18n="privacy_section5">お問い合わせ</h2>
+                                    <p class="text-gray-700" data-i18n="privacy_content5">本プライバシーポリシーについてご質問がある場合は、お問い合わせフォームよりご連絡ください。</p>
+                                </section>
+                                
+                                <div class="text-sm text-gray-500 mt-8">
+                                    <p data-i18n="privacy_updated">最終更新日：2024年1月1日</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contact Page -->
+                <div id="contactPage" class="page hidden">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="bg-white rounded-lg shadow-sm p-6">
+                            <h1 class="text-3xl font-bold text-gray-800 mb-6" data-i18n="contact_title">お問い合わせ</h1>
+                            
+                            <div class="space-y-6">
+                                <div class="bg-blue-50 p-4 rounded-lg">
+                                    <h2 class="text-lg font-semibold text-blue-800 mb-2" data-i18n="contact_notice_title">お問い合わせについて</h2>
+                                    <p class="text-blue-700" data-i18n="contact_notice_content">「ブロックバランス」に関するご質問、ご要望、不具合報告などは、以下の方法でお問い合わせください。</p>
+                                </div>
+                                
+                                <form id="contactForm" class="space-y-4">
+                                    <div>
+                                        <label for="contactName" class="block text-sm font-medium text-gray-700 mb-1" data-i18n="contact_name">お名前</label>
+                                        <input type="text" id="contactName" name="name" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500" required>
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="contactEmail" class="block text-sm font-medium text-gray-700 mb-1" data-i18n="contact_email">メールアドレス</label>
+                                        <input type="email" id="contactEmail" name="email" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500" required>
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="contactSubject" class="block text-sm font-medium text-gray-700 mb-1" data-i18n="contact_subject">件名</label>
+                                        <select id="contactSubject" name="subject" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500" required>
+                                            <option value="" data-i18n="contact_subject_select">選択してください</option>
+                                            <option value="bug" data-i18n="contact_subject_bug">不具合報告</option>
+                                            <option value="suggestion" data-i18n="contact_subject_suggestion">機能要望</option>
+                                            <option value="question" data-i18n="contact_subject_question">質問</option>
+                                            <option value="other" data-i18n="contact_subject_other">その他</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="contactMessage" class="block text-sm font-medium text-gray-700 mb-1" data-i18n="contact_message">メッセージ</label>
+                                        <textarea id="contactMessage" name="message" rows="6" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500" required></textarea>
+                                    </div>
+                                    
+                                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                                        <i class="fas fa-paper-plane mr-2"></i>
+                                        <span data-i18n="contact_send">送信</span>
+                                    </button>
+                                </form>
+                                
+                                <div class="border-t pt-6">
+                                    <h3 class="text-lg font-semibold mb-3" data-i18n="contact_alternative">その他の連絡方法</h3>
+                                    <div class="space-y-2">
+                                        <p class="text-gray-700">
+                                            <i class="fas fa-envelope mr-2"></i>
+                                            <span data-i18n="contact_direct_email">直接メール：</span>
+                                            <a href="mailto:info@blockbalance.com" class="text-blue-600 hover:underline">info@blockbalance.com</a>
+                                        </p>
+                                        <p class="text-gray-700">
+                                            <i class="fab fa-twitter mr-2"></i>
+                                            <span data-i18n="contact_twitter">Twitter：</span>
+                                            <a href="https://twitter.com/blockbalance" class="text-blue-600 hover:underline">@blockbalance</a>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <!-- History Modal -->
+        <div id="historyModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+            <div class="flex items-center justify-center min-h-screen p-4">
+                <div class="bg-white rounded-lg max-w-2xl w-full max-h-96 overflow-y-auto">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold" data-i18n="history_title">ゲーム履歴</h3>
+                            <button id="closeHistory" class="text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        <div id="historyContent" class="space-y-3">
+                            <!-- History content will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- PWA Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                    console.log('SW registered: ', registration);
+                }, function(registrationError) {
+                    console.log('SW registration failed: ', registrationError);
+                });
+            });
+        }
+    </script>
+    
+    <script>
+        // 多言語対応
+        const translations = {
+            ja: {
+                app_name: "ブロックバランス",
+                nav_game: "ゲーム",
+                nav_howto: "使い方",
+                nav_terms: "利用規約",
+                nav_privacy: "プライバシーポリシー",
+                nav_contact: "お問い合わせ",
+                language: "言語",
+                font_size: "文字サイズ",
+                menu: "メニュー",
+                game_controls: "ゲームコントロール",
+                current_score: "現在のスコア",
+                height: "高さ",
+                blocks_used: "使用ブロック数",
+                reset_game: "ゲームリセット",
+                share_result: "結果をシェア",
+                show_history: "履歴を表示",
+                game_title: "ブロックバランス",
+                game_description: "物理演算で遊ぶ積み木ゲーム！バランス感覚と創造力を養おう",
+                drag_blocks: "ブロックをドラッグして積み上げよう！",
+                block_palette: "ブロックパレット",
+                recommended_products: "おすすめ商品",
+                affiliate_description: "実際の積み木で遊んでみませんか？",
+                view_products: "商品を見る",
+                howto_title: "使い方",
+                basic_controls: "基本操作",
+                step1_title: "ブロックを選択",
+                step1_description: "画面下のブロックパレットから好きなブロックを選んでください。",
+                step2_title: "ドラッグ＆ドロップ",
+                step2_description: "選んだブロックをゲーム画面内にドラッグしてバランスよく配置しましょう。",
+                step3_title: "バランスを保つ",
+                step3_description: "ブロックが崩れないようにバランスを考えながら積み上げてください。",
+                scoring_system: "スコアリングシステム",
+                scoring_height: "高さ：1ブロック分の高さにつき10ポイント",
+                scoring_balance: "バランス：安定したバランスにつきボーナス",
+                scoring_creativity: "創造性：ユニークな形状にボーナス",
+                tips_title: "上達のコツ",
+                tip1_title: "重心を意識する",
+                tip1_description: "ブロックの重心を考えて、安定する位置に配置しましょう。",
+                tip2_title: "土台を固める",
+                tip2_description: "まず安定した土台を作ってから、上に積み上げていくのがおすすめです。",
+                history_title: "ゲーム履歴",
+                terms_title: "利用規約",
+                privacy_title: "プライバシーポリシー",
+                contact_title: "お問い合わせ",
+                contact_name: "お名前",
+                contact_email: "メールアドレス",
+                contact_subject: "件名",
+                contact_message: "メッセージ",
+                contact_send: "送信"
+            },
+            en: {
+                app_name: "Block Balance",
+                nav_game: "Game",
+                nav_howto: "How to Play",
+                nav_terms: "Terms",
+                nav_privacy: "Privacy",
+                nav_contact: "Contact",
+                language: "Language",
+                font_size: "Font Size",
+                menu: "Menu",
+                game_controls: "Game Controls",
+                current_score: "Current Score",
+                height: "Height",
+                blocks_used: "Blocks Used",
+                reset_game: "Reset Game",
+                share_result: "Share Result",
+                show_history: "Show History",
+                game_title: "Block Balance",
+                game_description: "Physics-based block stacking game! Develop balance and creativity",
+                drag_blocks: "Drag blocks to stack them up!",
+                block_palette: "Block Palette",
+                recommended_products: "Recommended Products",
+                affiliate_description: "Why not try playing with real blocks?",
+                view_products: "View Products",
+                howto_title: "How to Play",
+                basic_controls: "Basic Controls",
+                step1_title: "Select Block",
+                step1_description: "Choose your favorite block from the block palette below.",
+                step2_title: "Drag & Drop",
+                step2_description: "Drag the selected block into the game area and place it with good balance.",
+                step3_title: "Keep Balance",
+                step3_description: "Stack blocks carefully to prevent them from falling while maintaining balance.",
+                scoring_system: "Scoring System",
+                scoring_height: "Height: 10 points per block height",
+                scoring_balance: "Balance: Bonus for stable balance",
+                scoring_creativity: "Creativity: Bonus for unique shapes",
+                tips_title: "Tips for Improvement",
+                tip1_title: "Consider Center of Gravity",
+                tip1_description: "Think about the center of gravity and place blocks in stable positions.",
+                tip2_title: "Build a Solid Foundation",
+                tip2_description: "It's recommended to first create a stable foundation before stacking upward.",
+                history_title: "Game History",
+                terms_title: "Terms of Service",
+                privacy_title: "Privacy Policy",
+                contact_title: "Contact",
+                contact_name: "Name",
+                contact_email: "Email",
+                contact_subject: "Subject",
+                contact_message: "Message",
+                contact_send: "Send"
+            }
+        };
+        
+        // ゲーム状態管理
+        let gameState = {
+            score: 0,
+            height: 0,
+            blocksUsed: 0,
+            placedBlocks: [],
+            gameHistory: JSON.parse(localStorage.getItem('blockBalanceHistory') || '[]'),
+            isDragging: false,
+            draggedBlock: null,
+            currentLanguage: localStorage.getItem('blockBalanceLanguage') || 'ja',
+            currentFontSize: localStorage.getItem('blockBalanceFontSize') || 'base'
+        };
+        
+        // 物理演算クラス
+        class PhysicsEngine {
+            constructor() {
+                this.gravity = 0.5;
+                this.friction = 0.98;
+                this.restitution = 0.3;
+            }
+            
+            checkCollision(block1, block2) {
+                return (
+                    block1.x < block2.x + block2.width &&
+                    block1.x + block1.width > block2.x &&
+                    block1.y < block2.y + block2.height &&
+                    block1.y + block1.height > block2.y
+                );
+            }
+            
+            applyGravity(block) {
+                const canvas = document.getElementById('gameCanvas');
+                const canvasRect = canvas.getBoundingClientRect();
+                const groundY = canvasRect.height - 4; // Ground line height
+                
+                if (block.y + block.height < groundY) {
+                    block.velocityY += this.gravity;
+                    block.y += block.velocityY;
+                } else {
+                    block.y = groundY - block.height;
+                    block.velocityY = 0;
+                }
+            }
+            
+            checkStability(blocks) {
+                let stableCount = 0;
+                blocks.forEach(block => {
+                    if (this.isStable(block, blocks)) {
+                        stableCount++;
+                    }
+                });
+                return stableCount / blocks.length;
+            }
+            
+            isStable(block, allBlocks) {
+                const canvas = document.getElementById('gameCanvas');
+                const canvasRect = canvas.getBoundingClientRect();
+                const groundY = canvasRect.height - 4;
+                
+                // Ground check
+                if (block.y + block.height >= groundY) {
+                    return true;
+                }
+                
+                // Check if supported by another block
+                for (let other of allBlocks) {
+                    if (other !== block && 
+                        block.y + block.height <= other.y + 5 &&
+                        block.x + block.width > other.x &&
+                        block.x < other.x + other.width) {
+                        return true;
+                    }
+                }
+                
+                return false;
+            }
+        }
+        
+        const physics = new PhysicsEngine();
+        
+        // 初期化
+        function init() {
+            console.log('Initializing Block Balance Game...');
+            
+            // 言語設定の復元
+            setLanguage(gameState.currentLanguage);
+            document.getElementById('languageSelect').value = gameState.currentLanguage;
+            document.getElementById('mobileLanguageSelect').value = gameState.currentLanguage;
+            
+            // フォントサイズ設定の復元
+            setFontSize(gameState.currentFontSize);
+            document.getElementById('fontSizeSelect').value = gameState.currentFontSize;
+            document.getElementById('mobileFontSizeSelect').value = gameState.currentFontSize;
+            
+            // イベントリスナーの設定
+            setupEventListeners();
+            
+            // ゲーム画面の初期化
+            updateGameStats();
+            
+            // デフォルトページの表示
+            showPage('game');
+            
+            console.log('Game initialized successfully');
+        }
+        
+        // イベントリスナーの設定
+        function setupEventListeners() {
+            // モバイルメニュー
+            document.getElementById('mobileMenuToggle').addEventListener('click', openMobileMenu);
+            document.getElementById('closeMobileMenu').addEventListener('click', closeMobileMenu);
+            document.getElementById('mobileMenuOverlay').addEventListener('click', closeMobileMenu);
+            
+            // 言語選択
+            document.getElementById('languageSelect').addEventListener('change', (e) => {
+                setLanguage(e.target.value);
+            });
+            document.getElementById('mobileLanguageSelect').addEventListener('change', (e) => {
+                setLanguage(e.target.value);
+            });
+            
+            // フォントサイズ選択
+            document.getElementById('fontSizeSelect').addEventListener('change', (e) => {
+                setFontSize(e.target.value);
+            });
+            document.getElementById('mobileFontSizeSelect').addEventListener('change', (e) => {
+                setFontSize(e.target.value);
+            });
+            
+            // ゲームコントロール
+            document.getElementById('resetGame').addEventListener('click', resetGame);
+            document.getElementById('mobileResetGame').addEventListener('click', resetGame);
+            document.getElementById('shareResult').addEventListener('click', shareResult);
+            document.getElementById('mobileShareResult').addEventListener('click', shareResult);
+            document.getElementById('showHistory').addEventListener('click', showHistory);
+            
+            // 履歴モーダル
+            document.getElementById('closeHistory').addEventListener('click', closeHistory);
+            document.getElementById('historyModal').addEventListener('click', (e) => {
+                if (e.target.id === 'historyModal') {
+                    closeHistory();
+                }
+            });
+            
+            // ブロックパレット
+            setupBlockPalette();
+            
+            // ゲームキャンバス
+            setupGameCanvas();
+            
+            // お問い合わせフォーム
+            document.getElementById('contactForm').addEventListener('submit', handleContactForm);
+            
+            console.log('Event listeners set up successfully');
+        }
+        
+        // ブロックパレットの設定
+        function setupBlockPalette() {
+            const palette = document.getElementById('blockPalette');
+            const blocks = palette.querySelectorAll('.block-item');
+            
+            blocks.forEach(block => {
+                block.addEventListener('mousedown', startDrag);
+                block.addEventListener('touchstart', startDrag);
+            });
+        }
+        
+        // ゲームキャンバスの設定
+        function setupGameCanvas() {
+            const canvas = document.getElementById('gameCanvas');
+            
+            canvas.addEventListener('mousemove', handleDrag);
+            canvas.addEventListener('touchmove', handleDrag);
+            canvas.addEventListener('mouseup', endDrag);
+            canvas.addEventListener('touchend', endDrag);
+            canvas.addEventListener('mouseleave', endDrag);
+            
+            // Prevent default touch behaviors
+            canvas.addEventListener('touchstart', (e) => e.preventDefault());
+            canvas.addEventListener('touchmove', (e) => e.preventDefault());
+        }
+        
+        // ドラッグ開始
+        function startDrag(e) {
+            e.preventDefault();
+            gameState.isDragging = true;
+            
+            const block = e.target.closest('.block-item');
+            if (!block) return;
+            
+            const color = block.dataset.color;
+            const width = parseInt(block.dataset.width);
+            const height = parseInt(block.dataset.height);
+            
+            gameState.draggedBlock = {
+                color: color,
+                width: width,
+                height: height,
+                velocityY: 0
+            };
+            
+            block.classList.add('dragging');
+            
+            console.log('Started dragging block:', gameState.draggedBlock);
+        }
+        
+        // ドラッグ中
+        function handleDrag(e) {
+            if (!gameState.isDragging || !gameState.draggedBlock) return;
+            
+            e.preventDefault();
+            
+            // マウスまたはタッチの位置を取得
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            
+            if (clientX && clientY) {
+                const canvas = document.getElementById('gameCanvas');
+                const rect = canvas.getBoundingClientRect();
+                
+                // キャンバス内の相対位置を計算
+                const x = clientX - rect.left;
+                const y = clientY - rect.top;
+                
+                // ブロックの中心でドラッグするように調整
+                gameState.draggedBlock.x = x - gameState.draggedBlock.width / 2;
+                gameState.draggedBlock.y = y - gameState.draggedBlock.height / 2;
+                
+                // 画面範囲内に制限
+                gameState.draggedBlock.x = Math.max(0, Math.min(rect.width - gameState.draggedBlock.width, gameState.draggedBlock.x));
+                gameState.draggedBlock.y = Math.max(0, Math.min(rect.height - gameState.draggedBlock.height, gameState.draggedBlock.y));
+            }
+        }
+        
+        // ドラッグ終了
+        function endDrag(e) {
+            if (!gameState.isDragging || !gameState.draggedBlock) return;
+            
+            e.preventDefault();
+            
+            const canvas = document.getElementById('gameCanvas');
+            const rect = canvas.getBoundingClientRect();
+            
+            // マウスまたはタッチの位置を取得
+            const clientX = e.clientX || (e.changedTouches && e.changedTouches[0].clientX);
+            const clientY = e.clientY || (e.changedTouches && e.changedTouches[0].clientY);
+            
+            if (clientX && clientY) {
+                const x = clientX - rect.left;
+                const y = clientY - rect.top;
+                
+                // キャンバス内にドロップされた場合
+                if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+                    placeBlock(x, y);
+                }
+            }
+            
+            // ドラッグ状態をリセット
+            gameState.isDragging = false;
+            gameState.draggedBlock = null;
+            
+            // ドラッグクラスを削除
+            document.querySelectorAll('.block-item.dragging').forEach(block => {
+                block.classList.remove('dragging');
+            });
+            
+            console.log('Drag ended');
+        }
+        
+        // ブロックを配置
+        function placeBlock(x, y) {
+            if (!gameState.draggedBlock) return;
+            
+            const block = {
+                ...gameState.draggedBlock,
+                x: x - gameState.draggedBlock.width / 2,
+                y: y - gameState.draggedBlock.height / 2,
+                id: Date.now(),
+                velocityY: 0
+            };
+            
+            // 画面範囲内に制限
+            const canvas = document.getElementById('gameCanvas');
+            const rect = canvas.getBoundingClientRect();
+            block.x = Math.max(0, Math.min(rect.width - block.width, block.x));
+            block.y = Math.max(0, Math.min(rect.height - block.height, block.y));
+            
+            gameState.placedBlocks.push(block);
+            gameState.blocksUsed++;
+            
+            // DOM要素を作成
+            const blockElement = document.createElement('div');
+            blockElement.className = `placed-block block-${block.color}`;
+            blockElement.style.left = block.x + 'px';
+            blockElement.style.top = block.y + 'px';
+            blockElement.style.width = block.width + 'px';
+            blockElement.style.height = block.height + 'px';
+            blockElement.dataset.blockId = block.id;
+            
+            canvas.appendChild(blockElement);
+            
+            // 物理演算を開始
+            setTimeout(() => {
+                applyPhysics();
+            }, 100);
+            
+            // スコアを更新
+            updateScore();
+            updateGameStats();
+            
+            console.log('Block placed:', block);
+        }
+        
+        // 物理演算の適用
+        function applyPhysics() {
+            const animationFrame = () => {
+                let needsUpdate = false;
+                
+                gameState.placedBlocks.forEach(block => {
+                    const oldY = block.y;
+                    physics.applyGravity(block);
+                    
+                    if (block.y !== oldY) {
+                        needsUpdate = true;
+                        updateBlockPosition(block);
+                    }
+                });
+                
+                if (needsUpdate) {
+                    requestAnimationFrame(animationFrame);
+                } else {
+                    // 物理演算完了後にスコアを更新
+                    updateScore();
+                    updateGameStats();
+                }
+            };
+            
+            requestAnimationFrame(animationFrame);
+        }
+        
+        // ブロックの位置を更新
+        function updateBlockPosition(block) {
+            const blockElement = document.querySelector(`[data-block-id="${block.id}"]`);
+            if (blockElement) {
+                blockElement.style.left = block.x + 'px';
+                blockElement.style.top = block.y + 'px';
+            }
+        }
+        
+        // スコアの更新
+        function updateScore() {
+            if (gameState.placedBlocks.length === 0) {
+                gameState.score = 0;
+                gameState.height = 0;
+                return;
+            }
+            
+            // 高さの計算
+            const canvas = document.getElementById('gameCanvas');
+            const canvasRect = canvas.getBoundingClientRect();
+            const groundY = canvasRect.height - 4;
+            
+            let maxHeight = 0;
+            gameState.placedBlocks.forEach(block => {
+                const blockTop = block.y;
+                const height = groundY - blockTop;
+                if (height > maxHeight) {
+                    maxHeight = height;
+                }
+            });
+            
+            gameState.height = Math.floor(maxHeight / 50); // 50px = 1 height unit
+            
+            // スコアの計算
+            let score = gameState.height * 10; // 高さボーナス
+            
+            // バランスボーナス
+            const stability = physics.checkStability(gameState.placedBlocks);
+            score += Math.floor(stability * 50);
+            
+            // ブロック数ボーナス
+            score += gameState.blocksUsed * 5;
+            
+            gameState.score = score;
+            
+            console.log('Score updated:', {
+                score: gameState.score,
+                height: gameState.height,
+                blocksUsed: gameState.blocksUsed,
+                stability: stability
+            });
+        }
+        
+        // ゲーム統計の更新
+        function updateGameStats() {
+            // デスクトップ版
+            document.getElementById('scoreDisplay').textContent = gameState.score;
+            document.getElementById('heightDisplay').textContent = gameState.height;
+            document.getElementById('blocksUsedDisplay').textContent = gameState.blocksUsed;
+            
+            // モバイル版
+            document.getElementById('mobileScoreDisplay').textContent = gameState.score;
+            document.getElementById('mobileHeightDisplay').textContent = gameState.height;
+            document.getElementById('mobileBlocksUsedDisplay').textContent = gameState.blocksUsed;
+        }
+        
+        // ゲームリセット
+        function resetGame() {
+            console.log('Resetting game...');
+            
+            // ゲーム状態をリセット
+            gameState.score = 0;
+            gameState.height = 0;
+            gameState.blocksUsed = 0;
+            gameState.placedBlocks = [];
+            
+            // 配置されたブロックを削除
+            const canvas = document.getElementById('gameCanvas');
+            const placedBlocks = canvas.querySelectorAll('.placed-block');
+            placedBlocks.forEach(block => {
+                block.classList.add('falling-animation');
+                setTimeout(() => {
+                    block.remove();
+                }, 1000);
+            });
+            
+            // 統計を更新
+            updateGameStats();
+            
+            console.log('Game reset complete');
+        }
+        
+        // 結果をシェア
+        function shareResult() {
+            console.log('Sharing result...');
+            
+            const shareText = `🎯 ブロックバランスで遊んだよ！\n📊 スコア: ${gameState.score}\n📏 高さ: ${gameState.height}\n🧱 ブロック数: ${gameState.blocksUsed}\n\n#ブロックバランス #物理ゲーム #知育 \n\nhttps://appadaycreator.github.io/block-balance-game/`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'ブロックバランス - 結果をシェア',
+                    text: shareText,
+                    url: 'https://appadaycreator.github.io/block-balance-game/'
+                }).then(() => {
+                    console.log('Share successful');
+                }).catch(err => {
+                    console.log('Share failed', err);
+                    fallbackShare(shareText);
+                });
+            } else {
+                fallbackShare(shareText);
+            }
+        }
+        
+        // フォールバックシェア
+        function fallbackShare(text) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('結果をクリップボードにコピーしました！');
+                }).catch(err => {
+                    console.error('Clipboard copy failed', err);
+                    showShareModal(text);
+                });
+            } else {
+                showShareModal(text);
+            }
+        }
+        
+        // シェアモーダル表示
+        function showShareModal(text) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg p-6 max-w-md w-full">
+                    <h3 class="text-lg font-semibold mb-4">結果をシェア</h3>
+                    <textarea class="w-full p-2 border rounded h-32 mb-4" readonly>${text}</textarea>
+                    <div class="flex space-x-2">
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" class="flex-1 bg-gray-500 text-white py-2 px-4 rounded">閉じる</button>
+                        <button onclick="window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent('${text}'))" class="flex-1 bg-blue-500 text-white py-2 px-4 rounded">Twitter</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            setTimeout(() => {
+                modal.remove();
+            }, 30000);
+        }
+        
+        // 履歴を表示
+        function showHistory() {
+            console.log('Showing history...');
+            
+            const modal = document.getElementById('historyModal');
+            const content = document.getElementById('historyContent');
+            
+            if (gameState.gameHistory.length === 0) {
+                content.innerHTML = '<p class="text-gray-500 text-center">まだゲーム履歴がありません。</p>';
+            } else {
+                content.innerHTML = gameState.gameHistory.map((record, index) => `
+                    <div class="border rounded p-3 bg-gray-50">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-semibold">ゲーム ${index + 1}</span>
+                            <span class="text-sm text-gray-500">${new Date(record.timestamp).toLocaleString()}</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 text-sm">
+                            <div class="text-center">
+                                <div class="text-blue-600 font-semibold">${record.score}</div>
+                                <div class="text-gray-500">スコア</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-green-600 font-semibold">${record.height}</div>
+                                <div class="text-gray-500">高さ</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-purple-600 font-semibold">${record.blocksUsed}</div>
+                                <div class="text-gray-500">ブロック数</div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            modal.classList.remove('hidden');
+        }
+        
+        // 履歴を閉じる
+        function closeHistory() {
+            document.getElementById('historyModal').classList.add('hidden');
+        }
+        
+        // 履歴を保存
+        function saveToHistory() {
+            const record = {
+                timestamp: Date.now(),
+                score: gameState.score,
+                height: gameState.height,
+                blocksUsed: gameState.blocksUsed
+            };
+            
+            gameState.gameHistory.unshift(record);
+            
+            // 最新10件のみ保持
+            if (gameState.gameHistory.length > 10) {
+                gameState.gameHistory = gameState.gameHistory.slice(0, 10);
+            }
+            
+            localStorage.setItem('blockBalanceHistory', JSON.stringify(gameState.gameHistory));
+            
+            console.log('Game saved to history:', record);
+        }
+        
+        // 言語設定
+        function setLanguage(lang) {
+            console.log('Setting language to:', lang);
+            
+            gameState.currentLanguage = lang;
+            localStorage.setItem('blockBalanceLanguage', lang);
+            
+            // 両方の選択ボックスを同期
+            document.getElementById('languageSelect').value = lang;
+            document.getElementById('mobileLanguageSelect').value = lang;
+            
+            // 翻訳を適用
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    element.textContent = translations[lang][key];
+                }
+            });
+            
+            // HTML lang属性を更新
+            document.documentElement.lang = lang;
+        }
+        
+        // フォントサイズ設定
+        function setFontSize(size) {
+            console.log('Setting font size to:', size);
+            
+            gameState.currentFontSize = size;
+            localStorage.setItem('blockBalanceFontSize', size);
+            
+            // 両方の選択ボックスを同期
+            document.getElementById('fontSizeSelect').value = size;
+            document.getElementById('mobileFontSizeSelect').value = size;
+            
+            // フォントサイズクラスを適用
+            document.body.className = document.body.className.replace(/font-size-\w+/g, '');
+            document.body.classList.add(`font-size-${size}`);
+        }
+        
+        // ページ表示
+        function showPage(pageId) {
+            console.log('Showing page:', pageId);
+            
+            // 全ページを非表示
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.add('hidden');
+            });
+            
+            // 指定されたページを表示
+            const targetPage = document.getElementById(pageId + 'Page');
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+            }
+            
+            // モバイルメニューを閉じる
+            closeMobileMenu();
+        }
+        
+        // モバイルメニューを開く
+        function openMobileMenu() {
+            console.log('Opening mobile menu');
+            
+            document.getElementById('mobileMenuOverlay').classList.remove('hidden');
+            document.getElementById('mobileSidebar').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // モバイルメニューを閉じる
+        function closeMobileMenu() {
+            console.log('Closing mobile menu');
+            
+            document.getElementById('mobileMenuOverlay').classList.add('hidden');
+            document.getElementById('mobileSidebar').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // お問い合わせフォーム処理
+        function handleContactForm(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                subject: formData.get('subject'),
+                message: formData.get('message')
+            };
+            
+            console.log('Contact form submitted:', data);
+            
+            // 実際の送信処理は省略（メール送信サービスの連携が必要）
+            alert('お問い合わせありがとうございます。内容を確認次第、ご連絡いたします。');
+            
+            // フォームをリセット
+            e.target.reset();
+        }
+        
+        // ゲーム終了時の処理
+        function endGame() {
+            console.log('Game ended');
+            
+            // 履歴に保存
+            if (gameState.score > 0) {
+                saveToHistory();
+            }
+            
+            // 結果を表示
+            setTimeout(() => {
+                if (confirm(`ゲーム終了！\nスコア: ${gameState.score}\n高さ: ${gameState.height}\nブロック数: ${gameState.blocksUsed}\n\n結果をシェアしますか？`)) {
+                    shareResult();
+                }
+            }, 1000);
+        }
+        
+        // ページ読み込み時の初期化
+        document.addEventListener('DOMContentLoaded', init);
+        
+        // ウィンドウサイズ変更時の処理
+        window.addEventListener('resize', () => {
+            // モバイルメニューを閉じる
+            if (window.innerWidth > 768) {
+                closeMobileMenu();
+            }
+        });
+        
+        // ゲームループ（定期的にゲーム状態をチェック）
+        setInterval(() => {
+            if (gameState.placedBlocks.length > 0) {
+                // 安定性チェック
+                const stability = physics.checkStability(gameState.placedBlocks);
+                
+                // 不安定な場合は崩壊演出
+                if (stability < 0.3 && gameState.placedBlocks.length > 3) {
+                    console.log('Blocks are unstable, triggering collapse...');
+                    
+                    // 崩壊演出
+                    gameState.placedBlocks.forEach((block, index) => {
+                        setTimeout(() => {
+                            const blockElement = document.querySelector(`[data-block-id="${block.id}"]`);
+                            if (blockElement) {
+                                blockElement.classList.add('falling-animation');
+                                setTimeout(() => {
+                                    blockElement.remove();
+                                }, 1000);
+                            }
+                        }, index * 100);
+                    });
+                    
+                    // ゲーム終了
+                    setTimeout(() => {
+                        endGame();
+                        resetGame();
+                    }, 2000);
+                }
+            }
+        }, 2000);
+        
+        console.log('Block Balance Game script loaded successfully');
+    </script>
+</body>
+</html>
