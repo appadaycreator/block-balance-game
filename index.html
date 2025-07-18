@@ -780,12 +780,34 @@
                 const canvasRect = canvas.getBoundingClientRect();
                 const groundY = canvasRect.height - 4; // Ground line height
                 
-                if (block.y + block.height < groundY) {
-                    block.velocityY += this.gravity;
-                    block.y += block.velocityY;
-                } else {
-                    block.y = groundY - block.height;
-                    block.velocityY = 0;
+                // 他のブロックの上で止まる判定
+                let landed = false;
+                for (let other of gameState.placedBlocks) {
+                    if (other !== block) {
+                        // 下方向に接触しているか判定
+                        if (
+                            block.y + block.height <= other.y + 5 && // ほぼ接触
+                            block.y + block.height + block.velocityY >= other.y && // 次のフレームで重なる
+                            block.x + block.width > other.x &&
+                            block.x < other.x + other.width
+                        ) {
+                            block.y = other.y - block.height;
+                            block.velocityY = 0;
+                            landed = true;
+                            break;
+                        }
+                    }
+                }
+                
+                // 地面で止まる
+                if (!landed) {
+                    if (block.y + block.height < groundY) {
+                        block.velocityY += this.gravity;
+                        block.y += block.velocityY;
+                    } else {
+                        block.y = groundY - block.height;
+                        block.velocityY = 0;
+                    }
                 }
             }
             
