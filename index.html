@@ -1442,6 +1442,8 @@
             if (window.innerWidth > 768) {
                 closeMobileMenu();
             }
+            // 念のためオーバーレイも非表示
+            document.getElementById('mobileMenuOverlay').classList.add('hidden');
         });
         
         // ゲームループ（定期的にゲーム状態をチェック）
