@@ -1,0 +1,16 @@
+{
+  "name": "ブロックバランス",
+  "short_name": "ブロックバランス",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#3B82F6",
+  "theme_color": "#3B82F6",
+  "icons": [
+    {
+      "src": "assets/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+  "description": "物理演算で遊ぶ積み木シミュレーター「ブロックバランス」。"
+} 
