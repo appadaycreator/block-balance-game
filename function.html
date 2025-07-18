@@ -3,25 +3,535 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>機能紹介 | ブロックバランス</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>機能要件書 - ブロックバランス</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .status-completed { @apply bg-green-100 text-green-800 border-green-300; }
+        .status-coming-soon { @apply bg-yellow-100 text-yellow-800 border-yellow-300; }
+        .status-future { @apply bg-gray-100 text-gray-600 border-gray-300; }
+        .priority-high { @apply bg-red-50 border-l-4 border-red-400; }
+        .priority-medium { @apply bg-yellow-50 border-l-4 border-yellow-400; }
+        .priority-low { @apply bg-blue-50 border-l-4 border-blue-400; }
+        
+        @media print {
+            .no-print { display: none !important; }
+            .feature-card { break-inside: avoid; }
+        }
+    </style>
 </head>
-<body>
-    <header>
-        <h1>機能紹介</h1>
-    </header>
-    <main>
-        <section>
-            <h2>主な機能</h2>
-            <ul>
-                <li>物理演算による積み木</li>
-                <li>スコアリングシステム</li>
-                <li>多言語対応</li>
-            </ul>
-        </section>
-    </main>
-    <footer>
-        <a href="index.html">トップへ戻る</a>
-    </footer>
+<body class="bg-gray-50 text-gray-800">
+    <div class="max-w-6xl mx-auto p-6">
+        <!-- ヘッダー -->
+        <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
+            <div class="text-center">
+                <h1 class="text-4xl font-bold text-blue-600 mb-2">
+                    <i class="fas fa-cubes mr-3"></i>ブロックバランス
+                </h1>
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4">機能要件書</h2>
+                <p class="text-gray-600 text-lg">物理演算で遊ぶ積み木シミュレーター</p>
+                <div class="mt-6 flex justify-center space-x-4">
+                    <span class="px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                        <i class="fas fa-calendar-alt mr-2"></i>作成日: 2024年12月
+                    </span>
+                    <span class="px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                        <i class="fas fa-code mr-2"></i>バージョン: 1.0
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- プロジェクト概要 -->
+        <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                <i class="fas fa-info-circle mr-3 text-blue-500"></i>プロジェクト概要
+            </h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">基本情報</h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li><strong>サービス名:</strong> ブロックバランス（Block Balance）</li>
+                        <li><strong>ターゲット:</strong> 子育て世代（25-40歳）、子供（10-15歳）</li>
+                        <li><strong>技術スタック:</strong> HTML5, CSS3, JavaScript, Canvas API</li>
+                        <li><strong>ホスティング:</strong> GitHub Pages（運用費0円）</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">開発目標</h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li>✨ 創造力とバランス感覚の育成</li>
+                        <li>🎯 物理演算による リアルな積み木体験</li>
+                        <li>📱 レスポンシブ対応</li>
+                        <li>🌍 多言語対応（日本語・英語）</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 開発ステータス サマリー -->
+        <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                <i class="fas fa-chart-pie mr-3 text-green-500"></i>開発進捗サマリー
+            </h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="text-center p-6 bg-green-50 rounded-lg">
+                    <div class="text-3xl font-bold text-green-600 mb-2">12</div>
+                    <div class="text-green-700 font-medium">実装済み</div>
+                    <div class="text-sm text-green-600 mt-1">基本機能完了</div>
+                </div>
+                <div class="text-center p-6 bg-yellow-50 rounded-lg">
+                    <div class="text-3xl font-bold text-yellow-600 mb-2">8</div>
+                    <div class="text-yellow-700 font-medium">開発中</div>
+                    <div class="text-sm text-yellow-600 mt-1">Coming Soon</div>
+                </div>
+                <div class="text-center p-6 bg-gray-50 rounded-lg">
+                    <div class="text-3xl font-bold text-gray-600 mb-2">15</div>
+                    <div class="text-gray-700 font-medium">計画中</div>
+                    <div class="text-sm text-gray-600 mt-1">将来実装予定</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 機能一覧 -->
+        <div class="space-y-8">
+            <!-- 基本機能 -->
+            <div class="bg-white rounded-lg shadow-lg p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-cogs mr-3 text-blue-500"></i>基本機能
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="feature-card bg-white border border-gray-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">ゲーム画面</h3>
+                            <span class="status-completed px-3 py-1 rounded-full text-sm font-medium border">完了</span>
+                        </div>
+                        <ul class="space-y-2 text-gray-600">
+                            <li>✅ Canvas描画領域</li>
+                            <li>✅ レスポンシブ対応</li>
+                            <li>✅ ブロック配置エリア</li>
+                            <li>✅ 基本UI要素</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-card bg-white border border-gray-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">ブロック操作</h3>
+                            <span class="status-completed px-3 py-1 rounded-full text-sm font-medium border">完了</span>
+                        </div>
+                        <ul class="space-y-2 text-gray-600">
+                            <li>✅ マウス・タッチ操作</li>
+                            <li>✅ ドラッグ&ドロップ</li>
+                            <li>✅ 基本的な配置機能</li>
+                            <li>✅ 回転機能</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-card bg-white border border-gray-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">物理演算</h3>
+                            <span class="status-coming-soon px-3 py-1 rounded-full text-sm font-medium border">Coming Soon</span>
+                        </div>
+                        <ul class="space-y-2 text-gray-600">
+                            <li>🔄 重力シミュレーション</li>
+                            <li>🔄 衝突判定</li>
+                            <li>🔄 摩擦計算</li>
+                            <li>🔄 重心計算</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-card bg-white border border-gray-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">ブロック種類</h3>
+                            <span class="status-coming-soon px-3 py-1 rounded-full text-sm font-medium border">Coming Soon</span>
+                        </div>
+                        <ul class="space-y-2 text-gray-600">
+                            <li>🔄 基本形状（20種）</li>
+                            <li>🔄 特殊ブロック</li>
+                            <li>🔄 重さ違い</li>
+                            <li>🔄 素材違い</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UI・UX機能 -->
+            <div class="bg-white rounded-lg shadow-lg p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-desktop mr-3 text-purple-500"></i>UI・UX機能
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="feature-card bg-white border border-gray-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">レスポンシブ対応</h3>
+                            <span class="status-completed px-3 py-1 rounded-full text-sm font-medium border">完了</span>
+                        </div>
+                        <ul class="space-y-2 text-gray-600">
+                            <li>✅ モバイル対応</li>
+                            <li>✅ ハンバーガーメニュー</li>
+                            <li>✅ PCヘッダーメニュー</li>
+                            <li>✅ サイドバー</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-card bg-white border border-gray-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">アクセシビリティ</h3>
+                            <span class="status-completed px-3 py-1 rounded-full text-sm font-medium border">完了</span>
+                        </div>
+                        <ul class="space-y-2 text-gray-600">
+                            <li>✅ 文字サイズ変更</li>
+                            <li>✅ 多言語対応基盤</li>
+                            <li>✅ キーボード操作</li>
+                            <li>✅ 色覚サポート</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-card bg-white border border-gray-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">ナビゲーション</h3>
+                            <span class="status-completed px-3 py-1 rounded-full text-sm font-medium border">完了</span>
+                        </div>
+                        <ul class="space-y-2 text-gray-600">
+                            <li>✅ 共通ヘッダー</li>
+                            <li>✅ フッター</li>
+                            <li>✅ パンくずリスト</li>
+                            <li>✅ サイトマップ</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-card bg-white border border-gray-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">デザイン</h3>
+                            <span class="status-completed px-3 py-1 rounded-full text-sm font-medium border">完了</span>
+                        </div>
+                        <ul class="space-y-2 text-gray-600">
+                            <li>✅ SVGアイコン</li>
+                            <li>✅ カラーテーマ</li>
+                            <li>✅ グリッドシステム</li>
+                            <li>✅ アニメーション</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ゲーム機能 -->
+            <div class="bg-white rounded-lg shadow-lg p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-gamepad mr-3 text-red-500"></i>ゲーム機能
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="feature-card bg-white border border-gray-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">ゲームモード</h3>
+                            <span class="status-coming-soon px-3 py-1 rounded-full text-sm font-medium border">Coming Soon</span>
+                        </div>
+                        <ul class="space-y-2 text-gray-600">
+                            <li>🔄 自由制作モード</li>
+                            <li>🔄 高さチャレンジ</li>
+                            <li>🔄 指定形状作成</li>
+                            <li>🔄 バランスパズル</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-card bg-white border border-gray-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">チャレンジ</h3>
+                            <span class="status-future px-3 py-1 rounded-full text-sm font-medium border">将来実装</span>
+                        </div>
+                        <ul class="space-y-2 text-gray-600">
+                            <li>⏳ 最高記録挑戦</li>
+                            <li>⏳ 使用数制限</li>
+                            <li>⏳ 不安定な土台</li>
+                            <li>⏳ 時間制限モード</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-card bg-white border border-gray-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">操作支援</h3>
+                            <span class="status-coming-soon px-3 py-1 rounded-full text-sm font-medium border">Coming Soon</span>
+                        </div>
+                        <ul class="space-y-2 text-gray-600">
+                            <li>🔄 アンドゥ・リドゥ</li>
+                            <li>🔄 ゴースト表示</li>
+                            <li>🔄 グリッド吸着</li>
+                            <li>🔄 微調整モード</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-card bg-white border border-gray-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">視覚効果</h3>
+                            <span class="status-future px-3 py-1 rounded-full text-sm font-medium border">将来実装</span>
+                        </div>
+                        <ul class="space-y-2 text-gray-600">
+                            <li>⏳ 崩壊演出</li>
+                            <li>⏳ スローモーション</li>
+                            <li>⏳ パーティクル効果</li>
+                            <li>⏳ 3D表示オプション</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ソーシャル機能 -->
+            <div class="bg-white rounded-lg shadow-lg p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-share-alt mr-3 text-green-500"></i>ソーシャル機能
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="feature-card bg-white border border-gray-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">SNSシェア</h3>
+                            <span class="status-completed px-3 py-1 rounded-full text-sm font-medium border">完了</span>
+                        </div>
+                        <ul class="space-y-2 text-gray-600">
+                            <li>✅ Twitter/X投稿</li>
+                            <li>✅ Facebook投稿</li>
+                            <li>✅ 結果画像生成</li>
+                            <li>✅ OGP設定</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-card bg-white border border-gray-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">保存機能</h3>
+                            <span class="status-completed px-3 py-1 rounded-full text-sm font-medium border">完了</span>
+                        </div>
+                        <ul class="space-y-2 text-gray-600">
+                            <li>✅ ローカル保存</li>
+                            <li>✅ 履歴機能</li>
+                            <li>✅ 作品保存</li>
+                            <li>✅ 設定保存</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-card bg-white border border-gray-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">コミュニティ</h3>
+                            <span class="status-future px-3 py-1 rounded-full text-sm font-medium border">将来実装</span>
+                        </div>
+                        <ul class="space-y-2 text-gray-600">
+                            <li>⏳ 作品ギャラリー</li>
+                            <li>⏳ いいねシステム</li>
+                            <li>⏳ コメント機能</li>
+                            <li>⏳ 月間コンテスト</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-card bg-white border border-gray-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">分析機能</h3>
+                            <span class="status-future px-3 py-1 rounded-full text-sm font-medium border">将来実装</span>
+                        </div>
+                        <ul class="space-y-2 text-gray-600">
+                            <li>⏳ プレイ統計</li>
+                            <li>⏳ 成長記録</li>
+                            <li>⏳ 達成バッジ</li>
+                            <li>⏳ 学習レポート</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 技術的機能 -->
+            <div class="bg-white rounded-lg shadow-lg p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-wrench mr-3 text-orange-500"></i>技術的機能
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="feature-card bg-white border border-gray-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">SEO・分析</h3>
+                            <span class="status-completed px-3 py-1 rounded-full text-sm font-medium border">完了</span>
+                        </div>
+                        <ul class="space-y-2 text-gray-600">
+                            <li>✅ メタタグ最適化</li>
+                            <li>✅ 構造化データ</li>
+                            <li>✅ Google Analytics</li>
+                            <li>✅ Search Console</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-card bg-white border border-gray-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">PWA対応</h3>
+                            <span class="status-coming-soon px-3 py-1 rounded-full text-sm font-medium border">Coming Soon</span>
+                        </div>
+                        <ul class="space-y-2 text-gray-600">
+                            <li>🔄 マニフェスト</li>
+                            <li>🔄 サービスワーカー</li>
+                            <li>🔄 オフライン対応</li>
+                            <li>🔄 インストール対応</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-card bg-white border border-gray-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">パフォーマンス</h3>
+                            <span class="status-coming-soon px-3 py-1 rounded-full text-sm font-medium border">Coming Soon</span>
+                        </div>
+                        <ul class="space-y-2 text-gray-600">
+                            <li>🔄 遅延読み込み</li>
+                            <li>🔄 画像最適化</li>
+                            <li>🔄 キャッシュ最適化</li>
+                            <li>🔄 バンドル最適化</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-card bg-white border border-gray-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">テスト</h3>
+                            <span class="status-coming-soon px-3 py-1 rounded-full text-sm font-medium border">Coming Soon</span>
+                        </div>
+                        <ul class="space-y-2 text-gray-600">
+                            <li>🔄 自動テスト</li>
+                            <li>🔄 UIテスト</li>
+                            <li>🔄 パフォーマンステスト</li>
+                            <li>🔄 クロスブラウザテスト</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 開発ロードマップ -->
+        <div class="bg-white rounded-lg shadow-lg p-8 mt-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                <i class="fas fa-road mr-3 text-indigo-500"></i>開発ロードマップ
+            </h2>
+            
+            <div class="space-y-6">
+                <div class="priority-high p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                        <i class="fas fa-flag mr-2 text-red-500"></i>第1段階 - 基本機能完成（完了）
+                    </h3>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <h4 class="font-semibold text-gray-700 mb-2">実装済み機能</h4>
+                            <ul class="space-y-1 text-gray-600">
+                                <li>✅ 基本UI構築</li>
+                                <li>✅ レスポンシブ対応</li>
+                                <li>✅ ページ構成</li>
+                                <li>✅ SEO基礎設定</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-700 mb-2">期間・優先度</h4>
+                            <ul class="space-y-1 text-gray-600">
+                                <li><strong>期間:</strong> 2024年12月（完了）</li>
+                                <li><strong>優先度:</strong> 最高</li>
+                                <li><strong>進捗:</strong> 100%</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="priority-medium p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                        <i class="fas fa-flag mr-2 text-yellow-500"></i>第2段階 - コア機能実装（進行中）
+                    </h3>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <h4 class="font-semibold text-gray-700 mb-2">実装予定機能</h4>
+                            <ul class="space-y-1 text-gray-600">
+                                <li>🔄 物理演算エンジン</li>
+                                <li>🔄 ブロック配置システム</li>
+                                <li>🔄 基本ゲームモード</li>
+                                <li>🔄 操作支援機能</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-700 mb-2">期間・優先度</h4>
+                            <ul class="space-y-1 text-gray-600">
+                                <li><strong>期間:</strong> 2025年1月</li>
+                                <li><strong>優先度:</strong> 高</li>
+                                <li><strong>進捗:</strong> 30%</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="priority-low p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                        <i class="fas fa-flag mr-2 text-blue-500"></i>第3段階 - 拡張機能実装（計画中）
+                    </h3>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <h4 class="font-semibold text-gray-700 mb-2">実装予定機能</h4>
+                            <ul class="space-y-1 text-gray-600">
+                                <li>⏳ 高度なゲームモード</li>
+                                <li>⏳ コミュニティ機能</li>
+                                <li>⏳ 学習支援機能</li>
+                                <li>⏳ 分析・統計機能</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-700 mb-2">期間・優先度</h4>
+                            <ul class="space-y-1 text-gray-600">
+                                <li><strong>期間:</strong> 2025年2-3月</li>
+                                <li><strong>優先度:</strong> 中</li>
+                                <li><strong>進捗:</strong> 0%</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 技術仕様 -->
+        <div class="bg-white rounded-lg shadow-lg p-8 mt-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                <i class="fas fa-cog mr-3 text-gray-500"></i>技術仕様
+            </h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">フロントエンド</h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li>• HTML5 Canvas API</li>
+                        <li>• CSS3 / Tailwind CSS</li>
+                        <li>• Vanilla JavaScript</li>
+                        <li>• Web APIs</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">ライブラリ</h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li>• Matter.js（物理演算）</li>
+                        <li>• Font Awesome（アイコン）</li>
+                        <li>• Chart.js（統計）</li>
+                        <li>• Workbox（PWA）</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">インフラ</h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li>• GitHub Pages</li>
+                        <li>• GitHub Actions</li>
+                        <li>• CloudFlare CDN</li>
+                        <li>• Google Analytics</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- フッター -->
+        <div class="bg-gray-100 rounded-lg p-6 mt-8 text-center">
+            <p class="text-gray-600">
+                <i class="fas fa-calendar-alt mr-2"></i>最終更新: 2024年12月
+                <span class="mx-4">|</span>
+                <i class="fas fa-code mr-2"></i>バージョン: 1.0
+                <span class="mx-4">|</span>
+                <i class="fas fa-user mr-2"></i>開発者: appadaycreator
+            </p>
+        </div>
+    </div>
 </body>
-</html> 
+</html>
