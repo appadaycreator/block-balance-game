@@ -1465,8 +1465,12 @@
                 saveToHistory();
             }
             
-            // ダイアログは表示せず、静かにリセット
-            console.log(`ゲーム終了！スコア: ${gameState.score}, 高さ: ${gameState.height}, ブロック数: ${gameState.blocksUsed}`);
+            // 結果ダイアログを表示
+            setTimeout(() => {
+                if (confirm(`ゲーム終了！\nスコア: ${gameState.score}\n高さ: ${gameState.height}\nブロック数: ${gameState.blocksUsed}\n\n結果をシェアしますか？`)) {
+                    shareResult();
+                }
+            }, 1000);
         }
         
         // ページ読み込み時の初期化
