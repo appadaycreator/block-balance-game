@@ -789,7 +789,7 @@
             applyGravity(block) {
                 const canvas = document.getElementById('gameCanvas');
                 const canvasRect = canvas.getBoundingClientRect();
-                const groundY = canvasRect.height - 4; // Ground line height
+                const groundY = canvasRect.height - 4; // 動的に計算
                 
                 // 他のブロックの上で止まる判定
                 let landed = false;
@@ -835,7 +835,7 @@
             isStable(block, allBlocks) {
                 const canvas = document.getElementById('gameCanvas');
                 const canvasRect = canvas.getBoundingClientRect();
-                const groundY = canvasRect.height - 4;
+                const groundY = canvasRect.height - 4; // 動的に計算
                 
                 // Ground check
                 if (block.y + block.height >= groundY) {
@@ -1136,10 +1136,10 @@
                 return;
             }
             
-            // 高さの計算
+            // 高さの計算（動的なgroundYを使用）
             const canvas = document.getElementById('gameCanvas');
             const canvasRect = canvas.getBoundingClientRect();
-            const groundY = canvasRect.height - 4;
+            const groundY = canvasRect.height - 4; // 動的に計算
             
             let maxHeight = 0;
             gameState.placedBlocks.forEach(block => {
@@ -1171,7 +1171,8 @@
                 score: gameState.score,
                 height: gameState.height,
                 blocksUsed: gameState.blocksUsed,
-                stability: stability
+                stability: stability,
+                groundY: groundY
             });
         }
         
@@ -1190,11 +1191,33 @@
             // キャンバスの高さを設定
             canvas.style.height = newHeight + 'px';
             
+            // 座標系を再計算してブロック位置を調整
+            updateBlockPositionsAfterResize();
+            
             console.log('Canvas height adjusted:', {
                 maxBlockHeight: maxBlockHeight,
                 requiredHeight: requiredHeight,
                 newHeight: newHeight
             });
+        }
+        
+        // キャンバスサイズ変更後のブロック位置調整
+        function updateBlockPositionsAfterResize() {
+            const canvas = document.getElementById('gameCanvas');
+            const canvasRect = canvas.getBoundingClientRect();
+            const newGroundY = canvasRect.height - 4;
+            
+            // 全てのブロックの位置を新しい座標系に調整
+            gameState.placedBlocks.forEach(block => {
+                const blockElement = document.querySelector(`[data-block-id="${block.id}"]`);
+                if (blockElement) {
+                    // 新しい座標系で位置を更新
+                    blockElement.style.left = block.x + 'px';
+                    blockElement.style.top = block.y + 'px';
+                }
+            });
+            
+            console.log('Block positions updated after resize, new groundY:', newGroundY);
         }
         
         // ゲーム統計の更新
@@ -1232,6 +1255,9 @@
             
             // キャンバスの高さを元に戻す
             canvas.style.height = '384px'; // h-96相当
+            
+            // 座標系を再調整
+            updateBlockPositionsAfterResize();
             
             // 統計を更新
             updateGameStats();
