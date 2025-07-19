@@ -1152,6 +1152,9 @@
             
             gameState.height = Math.floor(maxHeight / 50); // 50px = 1 height unit
             
+            // キャンバスの高さを動的に調整
+            adjustCanvasHeight(maxHeight);
+            
             // スコアの計算
             let score = gameState.height * 10; // 高さボーナス
             
@@ -1169,6 +1172,28 @@
                 height: gameState.height,
                 blocksUsed: gameState.blocksUsed,
                 stability: stability
+            });
+        }
+        
+        // キャンバスの高さを動的に調整
+        function adjustCanvasHeight(maxBlockHeight) {
+            const canvas = document.getElementById('gameCanvas');
+            const minHeight = 384; // 最小高さ（h-96相当）
+            const padding = 100; // 上部の余白
+            
+            // 必要な高さを計算（最大ブロック高さ + 余白）
+            const requiredHeight = maxBlockHeight + padding;
+            
+            // 最小高さと比較して、大きい方を採用
+            const newHeight = Math.max(minHeight, requiredHeight);
+            
+            // キャンバスの高さを設定
+            canvas.style.height = newHeight + 'px';
+            
+            console.log('Canvas height adjusted:', {
+                maxBlockHeight: maxBlockHeight,
+                requiredHeight: requiredHeight,
+                newHeight: newHeight
             });
         }
         
@@ -1204,6 +1229,9 @@
                     block.remove();
                 }, 1000);
             });
+            
+            // キャンバスの高さを元に戻す
+            canvas.style.height = '384px'; // h-96相当
             
             // 統計を更新
             updateGameStats();
