@@ -1453,8 +1453,8 @@
                 // 安定性チェック
                 const stability = physics.checkStability(gameState.placedBlocks);
                 
-                // 不安定な場合は崩壊演出（条件を緩和）
-                if (stability < 0.5 && gameState.placedBlocks.length > 2) {
+                // 不安定な場合は崩壊演出（さらに厳しく）
+                if (stability < 0.7 && gameState.placedBlocks.length > 1) {
                     console.log('Blocks are unstable, triggering collapse...');
                     
                     // 崩壊演出
