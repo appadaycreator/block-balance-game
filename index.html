@@ -831,12 +831,13 @@
                     return true;
                 }
                 
-                // Check if supported by another block
+                // Check if supported by another block (重心ベースの厳格な判定)
+                const centerX = block.x + block.width / 2;
                 for (let other of allBlocks) {
                     if (other !== block && 
-                        block.y + block.height <= other.y + 5 &&
-                        block.x + block.width > other.x &&
-                        block.x < other.x + other.width) {
+                        Math.abs((block.y + block.height) - other.y) < 5 && // ほぼ接触
+                        centerX > other.x &&
+                        centerX < other.x + other.width) {
                         return true;
                     }
                 }
@@ -1452,8 +1453,8 @@
                 // 安定性チェック
                 const stability = physics.checkStability(gameState.placedBlocks);
                 
-                // 不安定な場合は崩壊演出
-                if (stability < 0.3 && gameState.placedBlocks.length > 3) {
+                // 不安定な場合は崩壊演出（条件を緩和）
+                if (stability < 0.5 && gameState.placedBlocks.length > 2) {
                     console.log('Blocks are unstable, triggering collapse...');
                     
                     // 崩壊演出
@@ -1476,7 +1477,7 @@
                     }, 2000);
                 }
             }
-        }, 2000);
+        }, 1000);
         
         console.log('Block Balance Game script loaded successfully');
     </script>
