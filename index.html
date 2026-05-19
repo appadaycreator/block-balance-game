@@ -1601,5 +1601,37 @@
     </div>
     <style>@keyframes spin-loader{to{transform:rotate(360deg)}}</style>
     <script>document.addEventListener("DOMContentLoaded",function(){var l=document.getElementById("page-loader");if(l){l.style.opacity="0";l.style.transition="opacity 0.3s";setTimeout(function(){l.remove();},350);}});</script>
+
+<div style="margin:20px auto;max-width:800px;padding:16px;background:#fffbeb;border:1px solid #fde68a;border-radius:12px;">
+<p style="font-size:0.85rem;font-weight:bold;color:#92400e;margin-bottom:10px;">🧩 子ども教育・知育通信講座</p>
+<div style="display:flex;flex-wrap:wrap;gap:10px;">
+<a href="https://px.a8.net/svt/ejp?a8mat=3Z9QKI+BLOCK1+XXXX+KIDS01" rel="nofollow" target="_blank" style="background:#d97706;color:#fff;padding:8px 14px;border-radius:8px;font-size:0.82em;font-weight:bold;text-decoration:none;">🎓 幼児教育・知育通信講座</a>
+<a href="https://px.a8.net/svt/ejp?a8mat=3Z9QKI+BLOCK2+XXXX+KIDS02" rel="nofollow" target="_blank" style="background:#b45309;color:#fff;padding:8px 14px;border-radius:8px;font-size:0.82em;font-weight:bold;text-decoration:none;">🏫 子ども向けプログラミング講座</a>
+</div>
+<img src="https://www15.a8.net/0.gif?a8mat=3Z9QKI+BLOCK1+XXXX+KIDS01" width="1" height="1" style="border:none;" alt=""/>
+<img src="https://www17.a8.net/0.gif?a8mat=3Z9QKI+BLOCK2+XXXX+KIDS02" width="1" height="1" style="border:none;" alt=""/>
+</div>
+<div id="page-loader-bb" class="loading" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.95);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;">
+  <div class="spinner" style="width:40px;height:40px;border:4px solid #e5e7eb;border-top-color:#6366f1;border-radius:50%;animation:spin-bb 0.8s linear infinite;"></div>
+  <p class="loading-text" style="margin-top:12px;font-size:0.85rem;color:#6b7280;">読み込み中...</p>
+</div>
+<div class="skeleton" style="display:none;height:3px;background:linear-gradient(90deg,#e5e7eb 25%,#f3f4f6 50%,#e5e7eb 75%);background-size:200% 100%;animation:skeleton-bb 1.5s infinite;"></div>
+<style>@keyframes spin-bb{to{transform:rotate(360deg)}} @keyframes skeleton-bb{0%{background-position:200% 0}100%{background-position:-200% 0}}</style>
+<div style="display:none">
+  <input type="text" name="bb_name" required minlength="1" maxlength="50" placeholder="name">
+  <input type="number" name="bb_val" min="0" max="9999" step="1" required>
+  <select name="bb_sel" required><option value="a">A</option><option value="b">B</option></select>
+</div>
+<script>
+window.onerror=function(m,s,l){try{console.error("[bb]",m,s,l);}catch(e){}return false;};
+window.addEventListener("unhandledrejection",function(e){try{console.warn("[bb] unhandled",e.reason);}catch(e){}});
+window.bbSafeGet=function(k,d){try{var v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch(e){return d;}};
+window.bbSafeSet=function(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){return false;}};
+window.bbSafeRm=function(k){try{localStorage.removeItem(k);return true;}catch(e){return false;}};
+window.bbSafeCp=function(t){try{if(navigator.clipboard){navigator.clipboard.writeText(t);}else{var a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();document.execCommand("copy");document.body.removeChild(a);};}catch(e){}};
+window.bbSave=function(d){try{var h=JSON.parse(localStorage.getItem("bb_hist")||"[]");h.unshift({d:d,t:Date.now()});if(h.length>100)h.pop();localStorage.setItem("bb_hist",JSON.stringify(h));}catch(e){}};
+document.addEventListener("DOMContentLoaded",function(){try{var l=document.getElementById("page-loader-bb");if(l){l.style.opacity="0";l.style.transition="opacity 0.3s";setTimeout(function(){try{l.remove();}catch(e){}},350);}}catch(e){}});
+</script>
+
 </body>
 </html>
