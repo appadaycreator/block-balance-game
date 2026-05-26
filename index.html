@@ -1406,7 +1406,8 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                 </div>
             `;
             document.body.appendChild(modal);
-            
+            // L3横展開: 背景クリックで閉じる
+            modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
             setTimeout(() => {
                 modal.remove();
             }, 30000);
