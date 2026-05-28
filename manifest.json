@@ -12,5 +12,6 @@
       "type": "image/png"
     }
   ],
-  "description": "物理演算で遊ぶ積み木シミュレーター「ブロックバランス」。"
-} 
+  "description": "物理演算で遊ぶ積み木シミュレーター「ブロックバランス」。",
+  "scope": "/block-balance-game/"
+}
