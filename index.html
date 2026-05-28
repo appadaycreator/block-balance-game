@@ -62,8 +62,6 @@
     
     <!-- Tailwind CSS -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     
     <style>
         .font-size-xs { font-size: 0.75rem; }
@@ -259,7 +257,7 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-4">
                         <div class="text-2xl font-bold text-blue-600">
-                            <i class="fas fa-cubes mr-2"></i>
+                            <span aria-hidden="true" class="mr-2">🧊</span>
                             <span data-i18n="app_name">ブロックバランス</span>
                         </div>
                     </div>
@@ -291,11 +289,11 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
         <header class="mobile-only bg-white shadow-sm border-b">
             <div class="flex items-center justify-between px-4 py-3">
                 <div class="text-xl font-bold text-blue-600">
-                    <i class="fas fa-cubes mr-2"></i>
+                    <span aria-hidden="true" class="mr-2">🧊</span>
                     <span data-i18n="app_name">ブロックバランス</span>
                 </div>
                 <button id="mobileMenuToggle" class="text-gray-700 hover:text-blue-600">
-                    <i class="fas fa-bars text-xl"></i>
+                    <span aria-hidden="true" class="text-xl">☰</span>
                 </button>
             </div>
         </header>
@@ -309,7 +307,7 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                 <div class="flex items-center justify-between">
                     <h2 class="text-lg font-semibold" data-i18n="menu">メニュー</h2>
                     <button id="closeMobileMenu" class="text-gray-500 hover:text-gray-700">
-                        <i class="fas fa-times text-xl"></i>
+                        <span aria-hidden="true" class="text-xl">✕</span>
                     </button>
                 </div>
             </div>
@@ -365,19 +363,19 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                         </div>
                         <div class="space-y-2">
                             <button id="resetGame" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded transition-colors">
-                                <i class="fas fa-redo mr-2"></i>
+                                <span aria-hidden="true" class="mr-2">🔄</span>
                                 <span data-i18n="reset_game">ゲームリセット</span>
                             </button>
                             <button id="shareResult" class="w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded transition-colors">
-                                <i class="fas fa-share mr-2"></i>
+                                <span aria-hidden="true" class="mr-2">📤</span>
                                 <span data-i18n="share_result">結果をシェア</span>
                             </button>
                             <button id="downloadCard" onclick="downloadBlockCard()" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4 rounded transition-colors">
-                                <i class="fas fa-camera mr-2"></i>
+                                <span aria-hidden="true" class="mr-2">📸</span>
                                 <span>📸 カード保存</span>
                             </button>
                             <button id="showHistory" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition-colors">
-                                <i class="fas fa-history mr-2"></i>
+                                <span aria-hidden="true" class="mr-2">📋</span>
                                 <span data-i18n="show_history">履歴を表示</span>
                             </button>
                         </div>
@@ -416,7 +414,7 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                             <div class="game-canvas w-full h-96 mb-6 relative" id="gameCanvas">
                                 <div class="absolute inset-0 flex items-center justify-center text-gray-500">
                                     <div class="text-center">
-                                        <i class="fas fa-cubes text-4xl mb-2"></i>
+                                        <span aria-hidden="true" class="text-4xl mb-2 block">🧊</span>
                                         <p data-i18n="drag_blocks">ブロックをドラッグして積み上げよう！</p>
                                     </div>
                                 </div>
@@ -452,16 +450,15 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                             <!-- Mobile Controls -->
                             <div class="mobile-only flex space-x-2 mb-6">
                                 <button id="mobileResetGame" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded transition-colors">
-                                    <i class="fas fa-redo mr-2"></i>
+                                    <span aria-hidden="true" class="mr-2">🔄</span>
                                     <span data-i18n="reset_game">リセット</span>
                                 </button>
                                 <button id="mobileShareResult" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded transition-colors">
-                                    <i class="fas fa-share mr-2"></i>
+                                    <span aria-hidden="true" class="mr-2">📤</span>
                                     <span data-i18n="share_result">シェア</span>
                                 </button>
                                 <button onclick="downloadBlockCard()" class="flex-1 bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4 rounded transition-colors">
-                                    <i class="fas fa-camera mr-2"></i>
-                                    <span>📸</span>
+                                    <span aria-hidden="true">📸</span>
                                 </button>
                             </div>
                             
@@ -518,15 +515,15 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                                     <div class="bg-gray-50 p-4 rounded-lg">
                                         <ul class="space-y-2">
                                             <li class="flex items-center space-x-2">
-                                                <i class="fas fa-star text-yellow-500"></i>
+                                                <span aria-hidden="true" class="text-yellow-500">⭐</span>
                                                 <span data-i18n="scoring_height">高さ：1ブロック分の高さにつき10ポイント</span>
                                             </li>
                                             <li class="flex items-center space-x-2">
-                                                <i class="fas fa-star text-yellow-500"></i>
+                                                <span aria-hidden="true" class="text-yellow-500">⭐</span>
                                                 <span data-i18n="scoring_balance">バランス：安定したバランスにつきボーナス</span>
                                             </li>
                                             <li class="flex items-center space-x-2">
-                                                <i class="fas fa-star text-yellow-500"></i>
+                                                <span aria-hidden="true" class="text-yellow-500">⭐</span>
                                                 <span data-i18n="scoring_creativity">創造性：ユニークな形状にボーナス</span>
                                             </li>
                                         </ul>
@@ -679,7 +676,7 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                                     </div>
                                     
                                     <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
-                                        <i class="fas fa-paper-plane mr-2"></i>
+                                        <span aria-hidden="true" class="mr-2">✉️</span>
                                         <span data-i18n="contact_send">送信</span>
                                     </button>
                                 </form>
@@ -688,12 +685,12 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                                     <h3 class="text-lg font-semibold mb-3" data-i18n="contact_alternative">その他の連絡方法</h3>
                                     <div class="space-y-2">
                                         <p class="text-gray-700">
-                                            <i class="fas fa-envelope mr-2"></i>
+                                            <span aria-hidden="true" class="mr-2">✉️</span>
                                             <span data-i18n="contact_direct_email">直接メール：</span>
                                             <a href="mailto:info@blockbalance.com" class="text-blue-600 hover:underline">info@blockbalance.com</a>
                                         </p>
                                         <p class="text-gray-700">
-                                            <i class="fab fa-twitter mr-2"></i>
+                                            <span aria-hidden="true" class="mr-2">𝕏</span>
                                             <span data-i18n="contact_twitter">Twitter：</span>
                                             <a href="https://twitter.com/blockbalance" class="text-blue-600 hover:underline">@blockbalance</a>
                                         </p>
@@ -762,7 +759,7 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-lg font-semibold" data-i18n="history_title">ゲーム履歴</h3>
                             <button id="closeHistory" class="text-gray-500 hover:text-gray-700">
-                                <i class="fas fa-times text-xl"></i>
+                                <span aria-hidden="true" class="text-xl">✕</span>
                             </button>
                         </div>
                         <div id="historyContent" class="space-y-3">
