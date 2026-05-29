@@ -658,9 +658,9 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
 
                             <!-- タイムアタック タイマー（表示時のみ） -->
                             <div id="timerBar" class="hidden flex items-center justify-center gap-3 mb-3 bg-gray-50 rounded-lg py-2">
-                                <span class="text-sm text-gray-600 font-semibold">残り時間</span>
+                                <span class="text-sm text-gray-600 font-semibold" id="timerLabel">残り時間</span>
                                 <span class="timer-display" id="timerDisplay">60</span>
-                                <span class="text-sm text-gray-600">秒</span>
+                                <span class="text-sm text-gray-600" id="timerSuffix">秒</span>
                             </div>
 
                             <!-- バランスメーター -->
@@ -752,6 +752,7 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                                 </button>
                                 <button onclick="undoLastBlock()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-2 px-4 rounded transition-colors">
                                     <span aria-hidden="true">↩</span>
+                                    <span class="text-xs ml-0.5">取消</span>
                                     <span id="mobileUndoCountBadge" class="undo-count-badge">3</span>
                                 </button>
                                 <button id="mobileShareResult" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded transition-colors">
@@ -769,7 +770,7 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                                         <h4 class="font-semibold mb-1" data-i18n="recommended_products">おすすめ商品</h4>
                                         <p class="text-sm opacity-90" data-i18n="affiliate_description">実際の積み木で遊んでみませんか？</p>
                                     </div>
-                                    <a href="#" class="bg-white text-purple-600 px-4 py-2 rounded hover:bg-gray-100 transition-colors" data-i18n="view_products">商品を見る</a>
+                                    <a href="https://www.amazon.co.jp/s?k=%E7%A9%8D%E3%81%BF%E6%9C%A8+%E6%9C%A8%E8%A3%BD+%E7%9F%A5%E8%82%B2%E7%8E%A9%E5%85%B7&tag=appadaycrea0f-22" target="_blank" rel="noopener" class="js-track-affiliate bg-white text-purple-600 px-4 py-2 rounded hover:bg-gray-100 transition-colors" data-i18n="view_products" data-platform="Amazon" data-item-name="積み木知育玩具バナー" data-link-type="affiliate_link">商品を見る</a>
                                 </div>
                             </div>
                         </div>
@@ -889,7 +890,7 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                                 </section>
                                 
                                 <div class="text-sm text-gray-500 mt-8">
-                                    <p data-i18n="terms_updated">最終更新日：2024年1月1日</p>
+                                    <p data-i18n="terms_updated">最終更新日：2026年5月30日</p>
                                 </div>
                             </div>
                         </div>
@@ -929,7 +930,7 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                                 </section>
                                 
                                 <div class="text-sm text-gray-500 mt-8">
-                                    <p data-i18n="privacy_updated">最終更新日：2024年1月1日</p>
+                                    <p data-i18n="privacy_updated">最終更新日：2026年5月30日</p>
                                 </div>
                             </div>
                         </div>
@@ -1036,9 +1037,9 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
         <!-- Game Over Modal -->
         <div id="gameOverModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-4">
             <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
-                <div class="text-5xl mb-3">💥</div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-1">ゲームオーバー！</h3>
-                <p class="text-gray-500 text-sm mb-4">塔が崩れてしまいました</p>
+                <div class="text-5xl mb-3" id="goIcon">💥</div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-1" id="goTitle">ゲームオーバー！</h3>
+                <p class="text-gray-500 text-sm mb-4" id="goSubtitle">塔が崩れてしまいました</p>
                 <div class="grid grid-cols-3 gap-3 mb-5 bg-gray-50 rounded-xl p-3">
                     <div>
                         <div class="text-2xl font-bold text-blue-600" id="goScore">0</div>
@@ -1056,6 +1057,7 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                 <div id="goNewBest" class="hidden text-yellow-500 font-bold text-sm mb-3">🏆 新記録達成！</div>
                 <div class="flex gap-2">
                     <button onclick="closeGameOver(); resetGame();" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold transition-colors">もう一度</button>
+                    <button onclick="downloadBlockCard();" class="bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-3 rounded-lg font-semibold transition-colors" title="スコアカード保存">📸</button>
                     <button onclick="closeGameOver(); shareResult();" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg font-semibold transition-colors">シェア</button>
                 </div>
             </div>
@@ -1820,6 +1822,11 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
         function placeBlock(x, y) {
             if (!gameState.draggedBlock) return;
 
+            // タイムアタック: 最初のブロック配置でタイマースタート
+            if (gameState.mode === 'timeattack' && !gameState.timerInterval) {
+                startTimer();
+            }
+
             const block = {
                 ...gameState.draggedBlock,
                 x: x - gameState.draggedBlock.width / 2,
@@ -2093,6 +2100,11 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
 
         // 難易度設定
         function setDifficulty(diff) {
+            // プレイ中に難易度変更しようとした場合は確認
+            if (gameState.blocksUsed > 0 && diff !== gameState.difficulty) {
+                if (!confirm('難易度を変更するとゲームがリセットされます。よろしいですか？')) return;
+                resetGame();
+            }
             gameState.difficulty = diff;
             ['diffEasy','diffNormal','diffHard'].forEach(id => {
                 const el = document.getElementById(id);
@@ -2105,6 +2117,25 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             if (btn) btn.classList.add(activeMap[diff]);
         }
 
+        // タイムアタック待機状態（Readyを表示）
+        function showTimerReady() {
+            document.getElementById('timerBar').classList.remove('hidden');
+            const el = document.getElementById('timerDisplay');
+            if (el) { el.textContent = 'GO!'; el.classList.remove('warning'); }
+            const lbl = document.getElementById('timerLabel');
+            if (lbl) lbl.textContent = 'ブロックを置くとスタート';
+            const sfx = document.getElementById('timerSuffix');
+            if (sfx) sfx.textContent = '';
+        }
+
+        // タイマー表示をカウントダウン状態に戻す
+        function setTimerCountdownUI() {
+            const lbl = document.getElementById('timerLabel');
+            if (lbl) lbl.textContent = '残り時間';
+            const sfx = document.getElementById('timerSuffix');
+            if (sfx) sfx.textContent = '秒';
+        }
+
         // ゲームモード切替
         function setMode(mode) {
             gameState.mode = mode;
@@ -2112,7 +2143,8 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             document.getElementById('modeTimeAttack').classList.toggle('active', mode === 'timeattack');
             if (mode === 'timeattack') {
                 resetGame();
-                startTimer();
+                // タイマーは最初のブロック配置でスタート（placeBlock内）
+                showTimerReady();
             } else {
                 stopTimer();
                 document.getElementById('timerBar').classList.add('hidden');
@@ -2124,13 +2156,14 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             stopTimer();
             gameState.timeLeft = 60;
             document.getElementById('timerBar').classList.remove('hidden');
+            setTimerCountdownUI();
             updateTimerDisplay();
             gameState.timerInterval = setInterval(() => {
                 gameState.timeLeft--;
                 updateTimerDisplay();
                 if (gameState.timeLeft <= 0) {
                     stopTimer();
-                    endGame();
+                    endGame(true); // タイムアウトによる終了
                 }
             }, 1000);
         }
@@ -2202,9 +2235,9 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             updateGameStats();
             updateRuler();
 
-            // タイムアタックモードの場合は自動で再スタート
+            // タイムアタックモードの場合はReady状態で待機（最初のブロック配置でスタート）
             if (gameState.mode === 'timeattack') {
-                startTimer();
+                showTimerReady();
             }
         }
 
@@ -2338,10 +2371,17 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             if (gameState.gameHistory.length === 0) {
                 content.innerHTML = '<p class="text-gray-500 text-center">まだゲーム履歴がありません。</p>';
             } else {
-                content.innerHTML = gameState.gameHistory.map((record, index) => `
+                content.innerHTML = gameState.gameHistory.map((record, index) => {
+                    const diffLabel = (DIFFICULTY_CONFIG[record.difficulty] || DIFFICULTY_CONFIG.normal).label;
+                    const modeLabel = record.mode === 'timeattack' ? '⏱ タイムアタック' : '通常';
+                    return `
                     <div class="border rounded p-3 bg-gray-50">
                         <div class="flex justify-between items-center mb-2">
-                            <span class="font-semibold">ゲーム ${index + 1}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="font-semibold">ゲーム ${index + 1}</span>
+                                <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">${diffLabel}</span>
+                                <span class="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">${modeLabel}</span>
+                            </div>
                             <span class="text-sm text-gray-500">${new Date(record.timestamp).toLocaleString()}</span>
                         </div>
                         <div class="grid grid-cols-3 gap-2 text-sm">
@@ -2359,7 +2399,7 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                             </div>
                         </div>
                     </div>
-                `).join('');
+                `}).join('');
             }
             
             modal.classList.remove('hidden');
@@ -2376,7 +2416,9 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                 timestamp: Date.now(),
                 score: gameState.score,
                 height: gameState.height,
-                blocksUsed: gameState.blocksUsed
+                blocksUsed: gameState.blocksUsed,
+                difficulty: gameState.difficulty,
+                mode: gameState.mode
             };
             
             gameState.gameHistory.unshift(record);
@@ -2482,9 +2524,22 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
         }
         
         // ゲームオーバーモーダルを表示
-        function showGameOver() {
+        function showGameOver(isTimeout) {
             const isNewBest = gameState.score > 0 && gameState.score >= gameState.bestScore;
             gameState.isGameOver = false;
+            // タイムアタックとゲームオーバーで演出を分岐
+            const icon = document.getElementById('goIcon');
+            const title = document.getElementById('goTitle');
+            const subtitle = document.getElementById('goSubtitle');
+            if (isTimeout) {
+                if (icon) icon.textContent = '🏁';
+                if (title) title.textContent = 'タイムアップ！';
+                if (subtitle) subtitle.textContent = '60秒間よく頑張りました！';
+            } else {
+                if (icon) icon.textContent = '💥';
+                if (title) title.textContent = 'ゲームオーバー！';
+                if (subtitle) subtitle.textContent = '塔が崩れてしまいました';
+            }
             document.getElementById('goScore').textContent = gameState.score;
             document.getElementById('goHeight').textContent = gameState.height;
             document.getElementById('goBlocks').textContent = gameState.blocksUsed;
@@ -2498,8 +2553,8 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             document.getElementById('gameOverModal').classList.add('hidden');
         }
 
-        // ゲーム終了時の処理
-        function endGame() {
+        // ゲーム終了時の処理（isTimeout: タイムアタック時間切れか否か）
+        function endGame(isTimeout) {
             if (gameState.isGameOver) return;
             gameState.isGameOver = true;
 
@@ -2514,15 +2569,17 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                 saveToHistory();
             }
 
-            // 崩壊音
-            playCollapse();
+            // 崩壊音（タイムアップ時は鳴らさない）
+            if (!isTimeout) playCollapse();
 
             const capturedGen = gameState.generation;
+            // タイムアップは素早くモーダル表示、崩壊は演出後
+            const delay = isTimeout ? 300 : 1500;
             setTimeout(() => {
                 // リセットされていたらスキップ（競合バグ防止）
                 if (gameState.generation !== capturedGen) return;
 
-                showGameOver();
+                showGameOver(isTimeout);
 
                 // DOM上の残留ブロックを明示的削除
                 const canvas = document.getElementById('gameCanvas');
@@ -2541,7 +2598,7 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                 if (hint) hint.style.display = '';
 
                 updateRuler();
-            }, 1500);
+            }, delay);
         }
         
         // ページ読み込み時の初期化
@@ -2602,7 +2659,7 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                 // ゲーム終了（generation で競合防止）
                 const capturedGen = gameState.generation;
                 setTimeout(() => {
-                    if (gameState.generation === capturedGen) endGame();
+                    if (gameState.generation === capturedGen) endGame(false); // 崩壊によるゲームオーバー
                 }, 2000);
             }
         }, 1000);
