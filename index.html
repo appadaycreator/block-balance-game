@@ -180,6 +180,132 @@
         .wobble-animation {
             animation: wobble 0.3s infinite linear;
         }
+
+        /* ブロックパレット選択ハイライト */
+        .block-item.selected {
+            outline: 3px solid #1d4ed8;
+            outline-offset: 2px;
+            transform: scale(1.12);
+        }
+        /* パレットアイテムのラベル */
+        .palette-label {
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: #fff;
+            text-align: center;
+            margin-top: 2px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            user-select: none;
+        }
+        /* パレット全体のラッパー */
+        .palette-item-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        /* キャンバスグリッドライン */
+        .game-canvas {
+            background-image:
+                linear-gradient(rgba(156,163,175,0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(156,163,175,0.12) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        /* 高さ目盛りラッパー */
+        .canvas-ruler-wrap {
+            position: relative;
+            display: flex;
+        }
+        .canvas-ruler {
+            width: 32px;
+            flex-shrink: 0;
+            position: relative;
+            background: rgba(243,244,246,0.8);
+            border: 1px solid #e5e7eb;
+            border-right: none;
+            border-radius: 4px 0 0 4px;
+            overflow: hidden;
+        }
+        .ruler-tick {
+            position: absolute;
+            right: 0;
+            font-size: 0.55rem;
+            color: #9ca3af;
+            font-weight: 600;
+            padding-right: 3px;
+            line-height: 1;
+        }
+        .ruler-best-line {
+            position: absolute;
+            right: 0;
+            left: 0;
+            height: 2px;
+            background: #f59e0b;
+            opacity: 0.7;
+        }
+
+        /* フローティングスコア */
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            60% { opacity: 1; transform: translateY(-30px) scale(1.2); }
+            100% { opacity: 0; transform: translateY(-60px) scale(0.8); }
+        }
+        .floating-score {
+            position: absolute;
+            pointer-events: none;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #10b981;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+            z-index: 20;
+            animation: floatUp 1.2s ease-out forwards;
+        }
+        .floating-score.bonus {
+            color: #f59e0b;
+            font-size: 1.2rem;
+        }
+        .floating-score.best {
+            color: #7c3aed;
+            font-size: 1.4rem;
+        }
+
+        /* サウンドトグルボタン */
+        .sound-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid #e5e7eb;
+            background: white;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .sound-btn:hover { border-color: #3b82f6; background: #eff6ff; }
+        .sound-btn.muted { border-color: #d1d5db; opacity: 0.5; }
+
+        /* キーボードショートカットバッジ */
+        .kbd-hint {
+            font-size: 0.65rem;
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 3px;
+            padding: 1px 4px;
+            color: #6b7280;
+            font-family: monospace;
+        }
+
+        /* ニューベスト演出 */
+        @keyframes newBestPulse {
+            0%, 100% { transform: scale(1); color: #fbbf24; }
+            50% { transform: scale(1.3); color: #f59e0b; }
+        }
+        .new-best-anim {
+            animation: newBestPulse 0.4s ease-in-out 3;
+        }
     
 /* Phase 8: Mobile Optimization */
 input, select, textarea { font-size: 16px !important; }
@@ -390,7 +516,7 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             </aside>
             
             <!-- Main Content -->
-            <main role="main" class="flex-1 p-4">
+            <main id="main" role="main" class="flex-1 p-4">
                 <!-- Game Page -->
                 <div id="gamePage" class="page">
                     <div class="max-w-4xl mx-auto">
@@ -416,39 +542,71 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                                 </div>
                             </div>
                             
-                            <!-- Game Canvas -->
-                            <div class="game-canvas w-full h-96 mb-6 relative" id="gameCanvas">
-                                <div class="absolute inset-0 flex items-center justify-center text-gray-500">
-                                    <div class="text-center">
-                                        <span aria-hidden="true" class="text-4xl mb-2 block">🧊</span>
-                                        <p data-i18n="drag_blocks">ブロックをドラッグして積み上げよう！</p>
+                            <!-- Game Canvas with ruler -->
+                            <div class="canvas-ruler-wrap mb-6">
+                                <div class="canvas-ruler" id="canvasRuler" aria-hidden="true"></div>
+                                <div class="game-canvas flex-1 h-96 relative" id="gameCanvas" style="border-radius: 0 4px 4px 0;">
+                                    <div class="absolute inset-0 flex items-center justify-center text-gray-500" id="canvasHint">
+                                        <div class="text-center">
+                                            <span aria-hidden="true" class="text-4xl mb-2 block">🧊</span>
+                                            <p data-i18n="drag_blocks">ブロックをドラッグして積み上げよう！</p>
+                                        </div>
                                     </div>
+                                    <!-- Ground line -->
+                                    <div class="absolute bottom-0 left-0 right-0 h-1 bg-gray-400"></div>
                                 </div>
-                                <!-- Ground line -->
-                                <div class="absolute bottom-0 left-0 right-0 h-1 bg-gray-400"></div>
                             </div>
                             
                             <!-- Block Palette -->
                             <div class="mb-6">
-                                <h3 class="text-lg font-semibold mb-3" data-i18n="block_palette">ブロックパレット</h3>
-                                <div class="grid grid-cols-6 gap-2" id="blockPalette">
-                                    <div class="block-item block-red w-12 h-12 rounded cursor-pointer hover:scale-105 transition-transform" data-color="red" data-width="48" data-height="48">
-                                        <div class="w-full h-full flex items-center justify-center text-white font-bold text-xs">正方形</div>
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="text-lg font-semibold" data-i18n="block_palette">ブロックパレット</h3>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs text-gray-400 desktop-only">クリックまたはドラッグで配置</span>
+                                        <span class="text-xs text-gray-400 mobile-only">タップで選択→キャンバスをタップ</span>
+                                        <button id="soundToggle" class="sound-btn" title="効果音のON/OFF" aria-label="効果音のON/OFF">🔊</button>
                                     </div>
-                                    <div class="block-item block-blue w-16 h-8 rounded cursor-pointer hover:scale-105 transition-transform" data-color="blue" data-width="64" data-height="32">
-                                        <div class="w-full h-full flex items-center justify-center text-white font-bold text-xs">横長</div>
+                                </div>
+                                <!-- モバイル選択中ブロック表示 -->
+                                <div id="mobileSelectedBlock" class="mobile-only hidden mb-2 text-sm text-blue-600 font-semibold text-center bg-blue-50 rounded-lg py-1">
+                                    ブロック選択中 — キャンバスをタップして配置
+                                </div>
+                                <div class="grid grid-cols-6 gap-3" id="blockPalette">
+                                    <!-- 正方形 -->
+                                    <div class="palette-item-wrap" title="正方形 48×48">
+                                        <div class="block-item block-red rounded cursor-pointer hover:scale-105 transition-transform"
+                                             style="width:48px;height:48px;" data-color="red" data-width="48" data-height="48"></div>
+                                        <span class="palette-label" style="color:#ef4444;">正方形</span>
                                     </div>
-                                    <div class="block-item block-green w-8 h-16 rounded cursor-pointer hover:scale-105 transition-transform" data-color="green" data-width="32" data-height="64">
-                                        <div class="w-full h-full flex items-center justify-center text-white font-bold text-xs">縦長</div>
+                                    <!-- 横長 -->
+                                    <div class="palette-item-wrap" title="横長 64×32">
+                                        <div class="block-item block-blue rounded cursor-pointer hover:scale-105 transition-transform"
+                                             style="width:64px;height:32px;" data-color="blue" data-width="64" data-height="32"></div>
+                                        <span class="palette-label" style="color:#3b82f6;">横長</span>
                                     </div>
-                                    <div class="block-item block-yellow w-12 h-6 rounded cursor-pointer hover:scale-105 transition-transform" data-color="yellow" data-width="48" data-height="24">
-                                        <div class="w-full h-full flex items-center justify-center text-white font-bold text-xs">平べったい</div>
+                                    <!-- 縦長 -->
+                                    <div class="palette-item-wrap" title="縦長 32×64">
+                                        <div class="block-item block-green rounded cursor-pointer hover:scale-105 transition-transform"
+                                             style="width:32px;height:64px;" data-color="green" data-width="32" data-height="64"></div>
+                                        <span class="palette-label" style="color:#10b981;">縦長</span>
                                     </div>
-                                    <div class="block-item block-purple w-10 h-10 rounded cursor-pointer hover:scale-105 transition-transform" data-color="purple" data-width="40" data-height="40">
-                                        <div class="w-full h-full flex items-center justify-center text-white font-bold text-xs">小</div>
+                                    <!-- 平べったい -->
+                                    <div class="palette-item-wrap" title="平べったい 48×24">
+                                        <div class="block-item block-yellow rounded cursor-pointer hover:scale-105 transition-transform"
+                                             style="width:48px;height:24px;" data-color="yellow" data-width="48" data-height="24"></div>
+                                        <span class="palette-label" style="color:#f59e0b;">平べったい</span>
                                     </div>
-                                    <div class="block-item block-pink w-14 h-14 rounded cursor-pointer hover:scale-105 transition-transform" data-color="pink" data-width="56" data-height="56">
-                                        <div class="w-full h-full flex items-center justify-center text-white font-bold text-xs">大</div>
+                                    <!-- 小 -->
+                                    <div class="palette-item-wrap" title="小 40×40">
+                                        <div class="block-item block-purple rounded cursor-pointer hover:scale-105 transition-transform"
+                                             style="width:40px;height:40px;" data-color="purple" data-width="40" data-height="40"></div>
+                                        <span class="palette-label" style="color:#8b5cf6;">小</span>
+                                    </div>
+                                    <!-- 大 -->
+                                    <div class="palette-item-wrap" title="大 56×56">
+                                        <div class="block-item block-pink rounded cursor-pointer hover:scale-105 transition-transform"
+                                             style="width:56px;height:56px;" data-color="pink" data-width="56" data-height="56"></div>
+                                        <span class="palette-label" style="color:#ec4899;">大</span>
                                     </div>
                                 </div>
                             </div>
@@ -918,8 +1076,59 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             ghostBlock: null,
             isGameOver: false,
             currentLanguage: localStorage.getItem('blockBalanceLanguage') || 'ja',
-            currentFontSize: localStorage.getItem('blockBalanceFontSize') || 'base'
+            currentFontSize: localStorage.getItem('blockBalanceFontSize') || 'base',
+            generation: 0,         // ゲームオーバー競合防止用カウンタ
+            selectedBlock: null,   // モバイルタップ選択中ブロック
+            soundEnabled: false    // 効果音（デフォルトOFF）
         };
+
+        // ===== 効果音 (Web Audio API) =====
+        let audioCtx = null;
+        function getAudioCtx() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            return audioCtx;
+        }
+        function playBeep(freq, duration, type, vol) {
+            if (!gameState.soundEnabled) return;
+            try {
+                const ctx = getAudioCtx();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = type || 'sine';
+                osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                gain.gain.setValueAtTime(vol || 0.15, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + duration);
+            } catch(e) {}
+        }
+        function playBlockPlace() {
+            playBeep(220, 0.08, 'square', 0.1);
+        }
+        function playCollapse() {
+            if (!gameState.soundEnabled) return;
+            try {
+                const ctx = getAudioCtx();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(300, ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(60, ctx.currentTime + 0.6);
+                gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.7);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.7);
+            } catch(e) {}
+        }
+        function playBest() {
+            [523, 659, 784, 1047].forEach((f, i) => {
+                setTimeout(() => playBeep(f, 0.15, 'sine', 0.12), i * 100);
+            });
+        }
         
         // 物理演算クラス
         class PhysicsEngine {
@@ -1022,21 +1231,75 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             setLanguage(gameState.currentLanguage);
             document.getElementById('languageSelect').value = gameState.currentLanguage;
             document.getElementById('mobileLanguageSelect').value = gameState.currentLanguage;
-            
+
             // フォントサイズ設定の復元
             setFontSize(gameState.currentFontSize);
             document.getElementById('fontSizeSelect').value = gameState.currentFontSize;
             document.getElementById('mobileFontSizeSelect').value = gameState.currentFontSize;
-            
+
             // イベントリスナーの設定
             setupEventListeners();
-            
+
             // ゲーム画面の初期化
             updateGameStats();
-            
+
+            // 高さ目盛りを初期化
+            initRuler();
+
             // デフォルトページの表示
             showPage('game');
-            
+        }
+
+        // 高さ目盛り初期化
+        function initRuler() {
+            updateRuler();
+        }
+
+        // 高さ目盛りを更新
+        function updateRuler() {
+            const ruler = document.getElementById('canvasRuler');
+            const canvas = document.getElementById('gameCanvas');
+            if (!ruler || !canvas) return;
+            const h = canvas.offsetHeight;
+            ruler.style.height = h + 'px';
+            ruler.innerHTML = '';
+            // 50px = 1ユニット、目盛りは5ユニット(250px)ごとに番号
+            const unitPx = 50;
+            const totalUnits = Math.floor(h / unitPx);
+            for (let u = 1; u <= totalUnits; u++) {
+                const yFromBottom = u * unitPx;
+                const yFromTop = h - yFromBottom;
+                const tick = document.createElement('div');
+                tick.className = 'ruler-tick';
+                tick.style.bottom = yFromBottom - 8 + 'px';
+                tick.style.top = 'auto';
+                tick.style.position = 'absolute';
+                tick.style.right = '2px';
+                tick.style.fontSize = '0.5rem';
+                tick.style.color = u % 5 === 0 ? '#6b7280' : '#d1d5db';
+                tick.style.fontWeight = u % 5 === 0 ? '700' : '400';
+                if (u % 2 === 0 || totalUnits <= 10) {
+                    tick.textContent = u;
+                }
+                // 目盛り線
+                const line = document.createElement('div');
+                line.style.cssText = `position:absolute;right:0;bottom:${yFromBottom}px;width:${u%5===0?14:8}px;height:1px;background:${u%5===0?'#9ca3af':'#d1d5db'};`;
+                ruler.appendChild(line);
+                if (u % 2 === 0 || totalUnits <= 10) ruler.appendChild(tick);
+            }
+            // ベストスコアラインを表示
+            if (gameState.bestScore > 0) {
+                const bestH = (gameState.bestScore - gameState.blocksUsed * 5 - 50) / 10; // おおよその高さ
+                const bestYFromBottom = Math.min(bestH * unitPx, h - 4);
+                if (bestYFromBottom > 0) {
+                    const bestLine = document.createElement('div');
+                    bestLine.className = 'ruler-best-line';
+                    bestLine.style.bottom = bestYFromBottom + 'px';
+                    bestLine.style.position = 'absolute';
+                    bestLine.title = 'ベスト記録';
+                    ruler.appendChild(bestLine);
+                }
+            }
         }
         
         // イベントリスナーの設定
@@ -1045,7 +1308,7 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             document.getElementById('mobileMenuToggle').addEventListener('click', openMobileMenu);
             document.getElementById('closeMobileMenu').addEventListener('click', closeMobileMenu);
             document.getElementById('mobileMenuOverlay').addEventListener('click', closeMobileMenu);
-            
+
             // 言語選択
             document.getElementById('languageSelect').addEventListener('change', (e) => {
                 setLanguage(e.target.value);
@@ -1053,7 +1316,7 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             document.getElementById('mobileLanguageSelect').addEventListener('change', (e) => {
                 setLanguage(e.target.value);
             });
-            
+
             // フォントサイズ選択
             document.getElementById('fontSizeSelect').addEventListener('change', (e) => {
                 setFontSize(e.target.value);
@@ -1061,14 +1324,14 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             document.getElementById('mobileFontSizeSelect').addEventListener('change', (e) => {
                 setFontSize(e.target.value);
             });
-            
+
             // ゲームコントロール
             document.getElementById('resetGame').addEventListener('click', resetGame);
             document.getElementById('mobileResetGame').addEventListener('click', resetGame);
             document.getElementById('shareResult').addEventListener('click', shareResult);
             document.getElementById('mobileShareResult').addEventListener('click', shareResult);
             document.getElementById('showHistory').addEventListener('click', showHistory);
-            
+
             // 履歴モーダル
             document.getElementById('closeHistory').addEventListener('click', closeHistory);
             document.getElementById('historyModal').addEventListener('click', (e) => {
@@ -1076,27 +1339,112 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                     closeHistory();
                 }
             });
-            
+
+            // サウンドトグル
+            document.getElementById('soundToggle').addEventListener('click', toggleSound);
+
+            // キーボードショートカット
+            document.addEventListener('keydown', handleKeydown);
+
             // ブロックパレット
             setupBlockPalette();
-            
+
             // ゲームキャンバス
             setupGameCanvas();
-            
+
             // お問い合わせフォーム
             document.getElementById('contactForm').addEventListener('submit', handleContactForm);
-            
+        }
+
+        // サウンドトグル
+        function toggleSound() {
+            gameState.soundEnabled = !gameState.soundEnabled;
+            const btn = document.getElementById('soundToggle');
+            if (btn) {
+                btn.textContent = gameState.soundEnabled ? '🔊' : '🔇';
+                btn.classList.toggle('muted', !gameState.soundEnabled);
+            }
+            if (gameState.soundEnabled) playBeep(440, 0.1, 'sine', 0.1);
+        }
+
+        // キーボードショートカット
+        function handleKeydown(e) {
+            // モーダル表示中はEscのみ有効
+            const historyOpen = !document.getElementById('historyModal').classList.contains('hidden');
+            const gameOverOpen = !document.getElementById('gameOverModal').classList.contains('hidden');
+            if (e.key === 'Escape') {
+                if (historyOpen) closeHistory();
+                if (gameOverOpen) closeGameOver();
+                if (gameState.selectedBlock) clearSelectedBlock();
+                return;
+            }
+            if (historyOpen || gameOverOpen) return;
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+            if (e.key === 'r' || e.key === 'R') {
+                resetGame();
+            } else if (e.key === 'h' || e.key === 'H') {
+                showHistory();
+            } else if (e.key === 'm' || e.key === 'M') {
+                toggleSound();
+            }
         }
         
+        // モバイル判定
+        function isMobile() {
+            return window.matchMedia('(max-width: 768px)').matches || 'ontouchstart' in window;
+        }
+
         // ブロックパレットの設定
         function setupBlockPalette() {
             const palette = document.getElementById('blockPalette');
             const blocks = palette.querySelectorAll('.block-item');
-            
+
             blocks.forEach(block => {
+                // デスクトップ: ドラッグ
                 block.addEventListener('mousedown', startDrag);
-                block.addEventListener('touchstart', startDrag);
+                // モバイル: タップで選択
+                block.addEventListener('touchstart', (e) => {
+                    // タッチが短いタップ（ドラッグでない）場合はモバイル選択モード
+                    const touchStartTime = Date.now();
+                    const startX = e.touches[0].clientX;
+                    const startY = e.touches[0].clientY;
+                    const onTouchEnd = (ev) => {
+                        block.removeEventListener('touchend', onTouchEnd);
+                        const dt = Date.now() - touchStartTime;
+                        const dx = Math.abs(ev.changedTouches[0].clientX - startX);
+                        const dy = Math.abs(ev.changedTouches[0].clientY - startY);
+                        if (dt < 400 && dx < 15 && dy < 15) {
+                            // タップ選択
+                            selectBlock(block);
+                        } else {
+                            // ドラッグ開始
+                            startDrag(e);
+                        }
+                    };
+                    block.addEventListener('touchend', onTouchEnd, { once: true });
+                }, { passive: true });
             });
+        }
+
+        // モバイルタップ: ブロック選択
+        function selectBlock(blockEl) {
+            // 既存の選択を解除
+            document.querySelectorAll('.block-item.selected').forEach(b => b.classList.remove('selected'));
+            const color = blockEl.dataset.color;
+            const width = parseInt(blockEl.dataset.width);
+            const height = parseInt(blockEl.dataset.height);
+            gameState.selectedBlock = { color, width, height, velocityY: 0 };
+            blockEl.classList.add('selected');
+            const hint = document.getElementById('mobileSelectedBlock');
+            if (hint) hint.classList.remove('hidden');
+        }
+
+        // モバイルタップ選択を解除
+        function clearSelectedBlock() {
+            gameState.selectedBlock = null;
+            document.querySelectorAll('.block-item.selected').forEach(b => b.classList.remove('selected'));
+            const hint = document.getElementById('mobileSelectedBlock');
+            if (hint) hint.classList.add('hidden');
         }
         
         // ゴーストブロックを生成
@@ -1109,7 +1457,25 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             gameState.ghostBlock = ghost;
         }
 
-        // ゴーストブロックを更新
+        // ゴーストブロックの着地予測Y座標を計算
+        function calcLandingY(blockX, blockW, blockH) {
+            const canvas = document.getElementById('gameCanvas');
+            const canvasRect = canvas.getBoundingClientRect();
+            const groundY = canvasRect.height - 4;
+            let landY = groundY - blockH;
+            // 積まれたブロックの上面をチェック
+            for (let other of gameState.placedBlocks) {
+                if (blockX + blockW > other.x + 4 && blockX < other.x + other.width - 4) {
+                    const topOfOther = other.y - blockH;
+                    if (topOfOther < landY) {
+                        landY = topOfOther;
+                    }
+                }
+            }
+            return Math.max(0, landY);
+        }
+
+        // ゴーストブロックを更新（着地予測位置）
         function updateGhostBlock(x, y) {
             const ghost = gameState.ghostBlock;
             if (!ghost || !gameState.draggedBlock) return;
@@ -1118,8 +1484,12 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             ghost.style.background = colorMap[b.color] || '#6b7280';
             ghost.style.width = b.width + 'px';
             ghost.style.height = b.height + 'px';
-            ghost.style.left = (x - b.width / 2) + 'px';
-            ghost.style.top = (y - b.height / 2) + 'px';
+            // X位置: カーソル追随
+            const ghostX = Math.max(0, x - b.width / 2);
+            // Y位置: 落下着地先（実際にドロップした時の位置）
+            const landingY = calcLandingY(ghostX, b.width, b.height);
+            ghost.style.left = ghostX + 'px';
+            ghost.style.top = landingY + 'px';
             ghost.style.display = 'block';
         }
 
@@ -1133,16 +1503,60 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             const canvas = document.getElementById('gameCanvas');
 
             canvas.addEventListener('mousemove', handleDrag);
-            canvas.addEventListener('touchmove', handleDrag);
+            canvas.addEventListener('touchmove', handleDrag, { passive: false });
             canvas.addEventListener('mouseup', endDrag);
             canvas.addEventListener('touchend', endDrag);
             canvas.addEventListener('mouseleave', () => { hideGhostBlock(); endDrag(); });
 
-            // Prevent default touch behaviors
-            canvas.addEventListener('touchstart', (e) => e.preventDefault());
-            canvas.addEventListener('touchmove', (e) => e.preventDefault());
+            // モバイルタップ配置（selectedBlockがある時）
+            canvas.addEventListener('click', handleCanvasClick);
+            canvas.addEventListener('touchend', handleCanvasTouchTap);
+
+            // ドラッグ開始時のデフォルト防止
+            canvas.addEventListener('touchstart', (e) => {
+                if (gameState.isDragging) e.preventDefault();
+            }, { passive: false });
+            canvas.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
             createGhostBlock();
+        }
+
+        // キャンバスクリックでモバイル選択済みブロックを配置
+        function handleCanvasClick(e) {
+            if (gameState.isDragging) return;
+            if (!gameState.selectedBlock) return;
+            const canvas = document.getElementById('gameCanvas');
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            gameState.draggedBlock = { ...gameState.selectedBlock };
+            placeBlock(x, y);
+            gameState.draggedBlock = null;
+            clearSelectedBlock();
+        }
+
+        // タッチタップでモバイル配置（短いタップのみ）
+        let _lastTouchTime = 0;
+        let _lastTouchPos = { x: 0, y: 0 };
+        function handleCanvasTouchTap(e) {
+            if (!gameState.selectedBlock) return;
+            if (gameState.isDragging) return;
+            const t = e.changedTouches[0];
+            const dt = Date.now() - _lastTouchTime;
+            // タップと判定（短い時間、少ない移動）
+            if (dt < 500) {
+                const canvas = document.getElementById('gameCanvas');
+                const rect = canvas.getBoundingClientRect();
+                const x = t.clientX - rect.left;
+                const y = t.clientY - rect.top;
+                if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+                    gameState.draggedBlock = { ...gameState.selectedBlock };
+                    placeBlock(x, y);
+                    gameState.draggedBlock = null;
+                    clearSelectedBlock();
+                }
+            }
+            _lastTouchTime = Date.now();
         }
         
         // ドラッグ開始
@@ -1237,7 +1651,7 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
         // ブロックを配置
         function placeBlock(x, y) {
             if (!gameState.draggedBlock) return;
-            
+
             const block = {
                 ...gameState.draggedBlock,
                 x: x - gameState.draggedBlock.width / 2,
@@ -1245,16 +1659,20 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                 id: Date.now(),
                 velocityY: 0
             };
-            
+
             // 画面範囲内に制限
             const canvas = document.getElementById('gameCanvas');
             const rect = canvas.getBoundingClientRect();
             block.x = Math.max(0, Math.min(rect.width - block.width, block.x));
             block.y = Math.max(0, Math.min(rect.height - block.height, block.y));
-            
+
             gameState.placedBlocks.push(block);
             gameState.blocksUsed++;
-            
+
+            // キャンバスヒントを非表示
+            const hint = document.getElementById('canvasHint');
+            if (hint) hint.style.display = 'none';
+
             // DOM要素を作成
             const blockElement = document.createElement('div');
             blockElement.className = `placed-block block-${block.color}`;
@@ -1263,18 +1681,38 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             blockElement.style.width = block.width + 'px';
             blockElement.style.height = block.height + 'px';
             blockElement.dataset.blockId = block.id;
-            
+
             canvas.appendChild(blockElement);
-            
+
+            // 効果音
+            playBlockPlace();
+
             // 物理演算を開始
             setTimeout(() => {
                 applyPhysics();
             }, 100);
-            
-            // スコアを更新
+
+            // スコアを更新してフローティング表示
+            const prevScore = gameState.score;
             updateScore();
             updateGameStats();
-            
+            updateRuler();
+            const gained = gameState.score - prevScore;
+            if (gained > 0) {
+                showFloatingScore(block.x + block.width / 2, block.y, '+' + gained);
+            }
+        }
+
+        // フローティングスコア表示
+        function showFloatingScore(x, y, text) {
+            const canvas = document.getElementById('gameCanvas');
+            const el = document.createElement('div');
+            el.className = 'floating-score';
+            el.textContent = text;
+            el.style.left = x + 'px';
+            el.style.top = Math.max(0, y - 10) + 'px';
+            canvas.appendChild(el);
+            setTimeout(() => el.remove(), 1300);
         }
         
         // 物理演算の適用
@@ -1354,11 +1792,16 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
 
             // ベストスコア更新
             if (score > gameState.bestScore) {
+                const isNew = gameState.bestScore > 0;
                 gameState.bestScore = score;
                 localStorage.setItem('blockBalanceBest', score);
-                if (document.getElementById('bestScoreDisplay')) {
-                    document.getElementById('bestScoreDisplay').textContent = score;
+                const el = document.getElementById('bestScoreDisplay');
+                if (el) {
+                    el.textContent = score;
+                    el.classList.add('new-best-anim');
+                    setTimeout(() => el.classList.remove('new-best-anim'), 1300);
                 }
+                if (isNew) playBest();
             }
         }
 
@@ -1426,6 +1869,8 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             gameState.blocksUsed = 0;
             gameState.placedBlocks = [];
             gameState.isGameOver = false;
+            gameState.generation++;   // 競合バグ防止: 古いタイマーを無効化
+            clearSelectedBlock();
             
             // 配置されたブロックを削除
             const canvas = document.getElementById('gameCanvas');
@@ -1439,13 +1884,17 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             
             // キャンバスの高さを元に戻す
             canvas.style.height = '384px'; // h-96相当
-            
+
+            // キャンバスヒントを再表示
+            const hint = document.getElementById('canvasHint');
+            if (hint) hint.style.display = '';
+
             // 座標系を再調整
             updateBlockPositionsAfterResize();
-            
-            // 統計を更新
+
+            // 統計・目盛りを更新
             updateGameStats();
-            
+            updateRuler();
         }
         
         // 結果をシェア
@@ -1737,16 +2186,33 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                 saveToHistory();
             }
 
+            // 崩壊音
+            playCollapse();
+
+            const capturedGen = gameState.generation;
             setTimeout(() => {
+                // リセットされていたらスキップ（競合バグ防止）
+                if (gameState.generation !== capturedGen) return;
+
                 showGameOver();
-                // 配置ブロックと状態をクリア（モーダル表示後）
+
+                // DOM上の残留ブロックを明示的削除
+                const canvas = document.getElementById('gameCanvas');
+                canvas.querySelectorAll('.placed-block').forEach(el => el.remove());
+
+                // 配置ブロックと状態をクリア
                 gameState.placedBlocks = [];
                 gameState.score = 0;
                 gameState.height = 0;
                 gameState.blocksUsed = 0;
                 updateGameStats();
-                const canvas = document.getElementById('gameCanvas');
                 canvas.style.height = '384px';
+
+                // キャンバスヒントを再表示
+                const hint = document.getElementById('canvasHint');
+                if (hint) hint.style.display = '';
+
+                updateRuler();
             }, 1500);
         }
         
@@ -1788,13 +2254,13 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                 
                 // 不安定な場合は崩壊演出（さらに厳しく）
                 if (stability < 0.7 && gameState.placedBlocks.length > 1) {
-                    
+
                     // 崩壊演出
                     gameState.placedBlocks.forEach((block, index) => {
                         setTimeout(() => {
                             const blockElement = document.querySelector(`[data-block-id="${block.id}"]`);
                             if (blockElement) {
-                                blockElement.classList.remove('wobble-animation'); // 崩壊時はグラグラ解除
+                                blockElement.classList.remove('wobble-animation');
                                 blockElement.classList.add('falling-animation');
                                 setTimeout(() => {
                                     blockElement.remove();
@@ -1802,11 +2268,13 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                             }
                         }, index * 100);
                     });
-                    
-                    // ゲーム終了
+
+                    // ゲーム終了（generation で競合防止）
+                    const capturedGen = gameState.generation;
                     setTimeout(() => {
-                        endGame();
-                        // resetGame()は削除（重複を防ぐため）
+                        if (gameState.generation === capturedGen) {
+                            endGame();
+                        }
                     }, 2000);
                 }
             }
@@ -1838,7 +2306,7 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
 </div>
 </div>
 <div id="page-loader-bb" class="loading" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.95);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;">
-  <div class="spinner" style="width:40px;height:40px;border:4px solid #e5e7eb;border-top-color:#7c3aed;border-radius:50%;animation:spin-bb 0.8s linear infinite;"></div>
+  <div class="spinner" style="width:40px;height:40px;border:4px solid #e5e7eb;border-top-color:#10b981;border-radius:50%;animation:spin-bb 0.8s linear infinite;"></div>
   <p class="loading-text" style="margin-top:12px;font-size:0.85rem;color:#6b7280;">読み込み中...</p>
 </div>
 <div class="skeleton" style="display:none;height:3px;background:linear-gradient(90deg,#e5e7eb 25%,#f3f4f6 50%,#e5e7eb 75%);background-size:200% 100%;animation:skeleton-bb 1.5s infinite;"></div>
@@ -1885,7 +2353,7 @@ document.addEventListener("DOMContentLoaded",function(){try{var l=document.getEl
 .toast-info{background:#7c3aed;}
 .loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,0.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9998;opacity:0;pointer-events:none;transition:opacity 0.2s;}
 .loading-overlay.active{opacity:1;pointer-events:all;}
-.loading-spinner{width:40px;height:40px;border:3px solid #e5e7eb;border-top-color:#7c3aed;border-radius:50%;animation:spin 0.7s linear infinite;}
+.loading-spinner{width:40px;height:40px;border:3px solid #e5e7eb;border-top-color:#10b981;border-radius:50%;animation:spin 0.7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 </style>
 <div class="toast-container" id="toastContainer"></div>
@@ -1968,8 +2436,8 @@ document.addEventListener("DOMContentLoaded",function(){try{var l=document.getEl
       <a href="https://appadaycreator.com/codebreaker-puzzle/" class="block text-sm text-indigo-600 hover:underline py-1">→ 暗号解読パズル無料で楽しめる謎解きゲーム</a>
     </div>
     <!-- rakuten-affiliate-block -->
-    <div class="card p-4 mb-4 text-center" style="border:1px solid #BF0000;background:#fff9f9;">
-      <p class="text-sm text-gray-600 mb-2">🛒 関連商品を楽天市場で探す</p>
+    <div class="card" style="border:1px solid #BF0000;background:#fff9f9;padding:16px;margin-bottom:16px;text-align:center;">
+      <p style="font-size:0.85rem;color:#4b5563;margin-bottom:8px;">🛒 関連商品を楽天市場で探す</p>
       <a href="https://hb.afl.rakuten.co.jp/ichiba/541ad0d2.ce2bed12.541ad0d3.a1a2318c/?pc=https%3A%2F%2Fsearch.rakuten.co.jp%2Fsearch%2Fmall%2F%25E3%2582%25B2%25E3%2583%25BC%25E3%2583%25A0%2520%25E3%2581%258A%25E3%2581%2599%25E3%2581%2599%25E3%2582%2581%2F&link_type=text" target="_blank" rel="nofollow sponsored noopener"
          style="display:inline-block;background:#BF0000;color:white;padding:10px 24px;border-radius:8px;font-weight:bold;font-size:14px;text-decoration:none;">
         楽天市場で「ゲーム おすすめ」を検索 →
