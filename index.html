@@ -306,7 +306,99 @@
         .new-best-anim {
             animation: newBestPulse 0.4s ease-in-out 3;
         }
-    
+
+        /* バランスメーター */
+        .balance-meter-wrap {
+            height: 12px;
+            background: #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 8px;
+            position: relative;
+        }
+        .balance-meter-bar {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.4s ease, background 0.4s ease;
+            background: #10b981;
+        }
+        .balance-meter-bar.warn { background: #f59e0b; }
+        .balance-meter-bar.danger { background: #ef4444; }
+        .balance-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #6b7280;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2px;
+        }
+
+        /* 難易度ボタン */
+        .diff-btn {
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1.5px solid #d1d5db;
+            background: #fff;
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            color: #374151;
+        }
+        .diff-btn:hover { border-color: #3b82f6; color: #3b82f6; }
+        .diff-btn.active-easy { background: #d1fae5; border-color: #10b981; color: #065f46; }
+        .diff-btn.active-normal { background: #dbeafe; border-color: #3b82f6; color: #1e40af; }
+        .diff-btn.active-hard { background: #fef3c7; border-color: #f59e0b; color: #92400e; }
+
+        /* タイムアタック タイマー */
+        .timer-display {
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: #3b82f6;
+            min-width: 48px;
+            text-align: center;
+        }
+        .timer-display.warning { color: #ef4444; animation: timerPulse 0.5s infinite; }
+        @keyframes timerPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* モードボタン */
+        .mode-btn {
+            padding: 5px 12px;
+            border-radius: 6px;
+            border: 1.5px solid #d1d5db;
+            background: #fff;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            color: #374151;
+        }
+        .mode-btn.active { background: #ede9fe; border-color: #8b5cf6; color: #5b21b6; }
+
+        /* アンドゥボタン残回数 */
+        .undo-count-badge {
+            display: inline-block;
+            background: #fef3c7;
+            color: #92400e;
+            border-radius: 10px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 1px 6px;
+            margin-left: 4px;
+        }
+
+        /* モバイル選択中ブロック パルス */
+        @keyframes selectedPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.4); }
+            50% { box-shadow: 0 0 0 6px rgba(59,130,246,0); }
+        }
+        .block-item.selected {
+            animation: selectedPulse 1s infinite;
+        }
+
 /* Phase 8: Mobile Optimization */
 input, select, textarea { font-size: 16px !important; }
 button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min-width: 48px; touch-action: manipulation; }
@@ -501,6 +593,11 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                                 <span aria-hidden="true" class="mr-2">🔄</span>
                                 <span data-i18n="reset_game">ゲームリセット</span>
                             </button>
+                            <button id="undoBtn" onclick="undoLastBlock()" class="w-full bg-amber-500 hover:bg-amber-600 text-white py-2 px-4 rounded transition-colors">
+                                <span aria-hidden="true" class="mr-1">↩</span>
+                                <span>取消</span>
+                                <span id="undoCountBadge" class="undo-count-badge">3</span>
+                            </button>
                             <button id="shareResult" class="w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded transition-colors">
                                 <span aria-hidden="true" class="mr-2">📤</span>
                                 <span data-i18n="share_result">結果をシェア</span>
@@ -545,6 +642,38 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                                 </div>
                             </div>
                             
+                            <!-- 難易度・モード選択 -->
+                            <div class="flex flex-wrap items-center gap-2 mb-3">
+                                <div class="flex items-center gap-1">
+                                    <span class="text-xs text-gray-500 font-semibold mr-1">難易度:</span>
+                                    <button class="diff-btn active-normal" id="diffEasy" onclick="setDifficulty('easy')">かんたん</button>
+                                    <button class="diff-btn active-normal" id="diffNormal" onclick="setDifficulty('normal')">ふつう</button>
+                                    <button class="diff-btn" id="diffHard" onclick="setDifficulty('hard')">むずかしい</button>
+                                </div>
+                                <div class="flex items-center gap-1 ml-auto">
+                                    <button class="mode-btn" id="modeNormal" onclick="setMode('normal')">通常</button>
+                                    <button class="mode-btn" id="modeTimeAttack" onclick="setMode('timeattack')">⏱ 60秒</button>
+                                </div>
+                            </div>
+
+                            <!-- タイムアタック タイマー（表示時のみ） -->
+                            <div id="timerBar" class="hidden flex items-center justify-center gap-3 mb-3 bg-gray-50 rounded-lg py-2">
+                                <span class="text-sm text-gray-600 font-semibold">残り時間</span>
+                                <span class="timer-display" id="timerDisplay">60</span>
+                                <span class="text-sm text-gray-600">秒</span>
+                            </div>
+
+                            <!-- バランスメーター -->
+                            <div class="mb-3">
+                                <div class="balance-label">
+                                    <span>バランス</span>
+                                    <span id="balancePercent">—</span>
+                                </div>
+                                <div class="balance-meter-wrap">
+                                    <div class="balance-meter-bar" id="balanceMeterBar" style="width:0%"></div>
+                                </div>
+                            </div>
+
                             <!-- Game Canvas with ruler -->
                             <div class="canvas-ruler-wrap mb-6">
                                 <div class="canvas-ruler" id="canvasRuler" aria-hidden="true"></div>
@@ -571,8 +700,9 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                                     </div>
                                 </div>
                                 <!-- モバイル選択中ブロック表示 -->
-                                <div id="mobileSelectedBlock" class="mobile-only hidden mb-2 text-sm text-blue-600 font-semibold text-center bg-blue-50 rounded-lg py-1">
-                                    ブロック選択中 — キャンバスをタップして配置
+                                <div id="mobileSelectedBlock" class="mobile-only hidden mb-2 text-sm text-blue-600 font-semibold bg-blue-50 rounded-lg py-1 px-3 flex items-center justify-between">
+                                    <span>ブロック選択中 — タップして配置</span>
+                                    <button onclick="clearSelectedBlock()" class="text-blue-400 hover:text-blue-700 font-bold ml-2 text-base">✕</button>
                                 </div>
                                 <div class="grid grid-cols-6 gap-3" id="blockPalette">
                                     <!-- 正方形 -->
@@ -617,12 +747,15 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
                             <!-- Mobile Controls -->
                             <div class="mobile-only flex space-x-2 mb-6">
                                 <button id="mobileResetGame" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded transition-colors">
-                                    <span aria-hidden="true" class="mr-2">🔄</span>
-                                    <span data-i18n="reset_game">リセット</span>
+                                    <span aria-hidden="true" class="mr-1">🔄</span>
+                                    <span>リセット</span>
+                                </button>
+                                <button onclick="undoLastBlock()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-2 px-4 rounded transition-colors">
+                                    <span aria-hidden="true">↩</span>
+                                    <span id="mobileUndoCountBadge" class="undo-count-badge">3</span>
                                 </button>
                                 <button id="mobileShareResult" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded transition-colors">
-                                    <span aria-hidden="true" class="mr-2">📤</span>
-                                    <span data-i18n="share_result">シェア</span>
+                                    <span aria-hidden="true">📤</span>
                                 </button>
                                 <button onclick="downloadBlockCard()" class="flex-1 bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4 rounded transition-colors">
                                     <span aria-hidden="true">📸</span>
@@ -1066,6 +1199,13 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             }
         };
         
+        // 難易度設定
+        const DIFFICULTY_CONFIG = {
+            easy:   { threshold: 0.5,  scoreMultiplier: 1.0, label: 'かんたん' },
+            normal: { threshold: 0.65, scoreMultiplier: 1.5, label: 'ふつう' },
+            hard:   { threshold: 0.8,  scoreMultiplier: 2.0, label: 'むずかしい' }
+        };
+
         // ゲーム状態管理
         let gameState = {
             score: 0,
@@ -1082,7 +1222,14 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             currentFontSize: localStorage.getItem('blockBalanceFontSize') || 'base',
             generation: 0,         // ゲームオーバー競合防止用カウンタ
             selectedBlock: null,   // モバイルタップ選択中ブロック
-            soundEnabled: false    // 効果音（デフォルトOFF）
+            soundEnabled: false,   // 効果音（デフォルトOFF）
+            lastPlacedAt: 0,       // 配置直後クールダウン用
+            undoCount: 3,          // アンドゥ残回数
+            undoStack: [],         // アンドゥスタック（最新1件）
+            difficulty: 'normal',  // 難易度
+            mode: 'normal',        // ゲームモード（normal/timeattack）
+            timerInterval: null,   // タイムアタック用タイマーID
+            timeLeft: 60           // 残り時間（秒）
         };
 
         // ===== 効果音 (Web Audio API) =====
@@ -1248,6 +1395,10 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
 
             // 高さ目盛りを初期化
             initRuler();
+
+            // 難易度・モードを初期表示
+            setDifficulty('normal');
+            setMode('normal');
 
             // デフォルトページの表示
             showPage('game');
@@ -1515,6 +1666,20 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             canvas.addEventListener('click', handleCanvasClick);
             canvas.addEventListener('touchend', handleCanvasTouchTap);
 
+            // モバイル: 選択中ブロックのゴースト追従
+            canvas.addEventListener('touchmove', (e) => {
+                if (gameState.selectedBlock && !gameState.isDragging) {
+                    e.preventDefault();
+                    const t = e.touches[0];
+                    const rect = canvas.getBoundingClientRect();
+                    const x = t.clientX - rect.left;
+                    // 一時的にdraggedBlockをセットしてゴースト更新
+                    gameState.draggedBlock = { ...gameState.selectedBlock };
+                    updateGhostBlock(x, t.clientY - rect.top);
+                    gameState.draggedBlock = null;
+                }
+            }, { passive: false });
+
             // ドラッグ開始時のデフォルト防止
             canvas.addEventListener('touchstart', (e) => {
                 if (gameState.isDragging) e.preventDefault();
@@ -1671,6 +1836,8 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
 
             gameState.placedBlocks.push(block);
             gameState.blocksUsed++;
+            gameState.lastPlacedAt = Date.now();  // クールダウン用タイムスタンプ
+            gameState.undoStack = [block];          // アンドゥ用（最新1件）
 
             // キャンバスヒントを非表示
             const hint = document.getElementById('canvasHint');
@@ -1783,15 +1950,22 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             
             // スコアの計算
             let score = gameState.height * 10; // 高さボーナス
-            
+
             // バランスボーナス
             const stability = physics.checkStability(gameState.placedBlocks);
             score += Math.floor(stability * 50);
-            
+
             // ブロック数ボーナス
             score += gameState.blocksUsed * 5;
-            
+
+            // 難易度倍率適用
+            const multiplier = DIFFICULTY_CONFIG[gameState.difficulty].scoreMultiplier;
+            score = Math.floor(score * multiplier);
+
             gameState.score = score;
+
+            // バランスメーター更新
+            updateBalanceMeter(stability);
 
             // ベストスコア更新
             if (score > gameState.bestScore) {
@@ -1808,22 +1982,21 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             }
         }
 
-        // キャンバスの高さを動的に調整
+        // キャンバスの高さを動的に調整（既存ブロックが再落下しないよう補正）
         function adjustCanvasHeight(maxBlockHeight) {
             const canvas = document.getElementById('gameCanvas');
-            const minHeight = 384; // 最小高さ（h-96相当）
-            const padding = 100; // 上部の余白
-            
-            // 必要な高さを計算（最大ブロック高さ + 余白）
+            const minHeight = 384;
+            const padding = 100;
             const requiredHeight = maxBlockHeight + padding;
-            
-            // 最小高さと比較して、大きい方を採用
             const newHeight = Math.max(minHeight, requiredHeight);
-            
-            // キャンバスの高さを設定
+            const oldHeight = canvas.offsetHeight;
+            if (newHeight === oldHeight) return;
+            const diff = newHeight - oldHeight; // 増分（正の値）
+            // 既存ブロックのY座標をdiff分下にずらして底面相対位置を維持
+            gameState.placedBlocks.forEach(block => {
+                block.y += diff;
+            });
             canvas.style.height = newHeight + 'px';
-            
-            // 座標系を再計算してブロック位置を調整
             updateBlockPositionsAfterResize();
         }
         
@@ -1859,12 +2032,137 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             document.getElementById('mobileBlocksUsedDisplay').textContent = gameState.blocksUsed;
         }
         
+        // バランスメーター更新
+        function updateBalanceMeter(stability) {
+            const bar = document.getElementById('balanceMeterBar');
+            const label = document.getElementById('balancePercent');
+            if (!bar) return;
+            if (gameState.placedBlocks.length === 0) {
+                bar.style.width = '0%';
+                bar.className = 'balance-meter-bar';
+                if (label) label.textContent = '—';
+                return;
+            }
+            const pct = Math.round(stability * 100);
+            bar.style.width = pct + '%';
+            if (label) label.textContent = pct + '%';
+            bar.classList.remove('warn', 'danger');
+            if (stability < 0.5) bar.classList.add('danger');
+            else if (stability < 0.75) bar.classList.add('warn');
+        }
+
+        // アンドゥ残回数バッジ更新
+        function updateUndoCountBadge() {
+            const badges = ['undoCountBadge', 'mobileUndoCountBadge'];
+            badges.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = gameState.undoCount;
+            });
+            const btn = document.getElementById('undoBtn');
+            if (btn) btn.disabled = gameState.undoCount <= 0 || gameState.undoStack.length === 0;
+        }
+
+        // アンドゥ（最後のブロックを1個取り消す）
+        function undoLastBlock() {
+            if (gameState.undoCount <= 0) {
+                if (typeof showToast === 'function') showToast('取消の残り回数がありません', 'error');
+                return;
+            }
+            if (gameState.undoStack.length === 0 || gameState.placedBlocks.length === 0) {
+                if (typeof showToast === 'function') showToast('取り消すブロックがありません', 'info');
+                return;
+            }
+            const undoBlock = gameState.undoStack.pop();
+            const idx = gameState.placedBlocks.findIndex(b => b.id === undoBlock.id);
+            if (idx !== -1) {
+                gameState.placedBlocks.splice(idx, 1);
+                const el = document.querySelector(`[data-block-id="${undoBlock.id}"]`);
+                if (el) {
+                    el.classList.add('falling-animation');
+                    setTimeout(() => el.remove(), 600);
+                }
+                gameState.blocksUsed = Math.max(0, gameState.blocksUsed - 1);
+                gameState.undoCount--;
+                updateUndoCountBadge();
+                updateScore();
+                updateGameStats();
+                updateRuler();
+                if (typeof showToast === 'function') showToast('↩ ブロックを取り消しました', 'info');
+            }
+        }
+
+        // 難易度設定
+        function setDifficulty(diff) {
+            gameState.difficulty = diff;
+            ['diffEasy','diffNormal','diffHard'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.classList.remove('active-easy','active-normal','active-hard');
+            });
+            const map = { easy: 'diffEasy', normal: 'diffNormal', hard: 'diffHard' };
+            const activeMap = { easy: 'active-easy', normal: 'active-normal', hard: 'active-hard' };
+            const btn = document.getElementById(map[diff]);
+            if (btn) btn.classList.add(activeMap[diff]);
+        }
+
+        // ゲームモード切替
+        function setMode(mode) {
+            gameState.mode = mode;
+            document.getElementById('modeNormal').classList.toggle('active', mode === 'normal');
+            document.getElementById('modeTimeAttack').classList.toggle('active', mode === 'timeattack');
+            if (mode === 'timeattack') {
+                resetGame();
+                startTimer();
+            } else {
+                stopTimer();
+                document.getElementById('timerBar').classList.add('hidden');
+            }
+        }
+
+        // タイムアタック タイマー開始
+        function startTimer() {
+            stopTimer();
+            gameState.timeLeft = 60;
+            document.getElementById('timerBar').classList.remove('hidden');
+            updateTimerDisplay();
+            gameState.timerInterval = setInterval(() => {
+                gameState.timeLeft--;
+                updateTimerDisplay();
+                if (gameState.timeLeft <= 0) {
+                    stopTimer();
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        // タイマー停止
+        function stopTimer() {
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+                gameState.timerInterval = null;
+            }
+            gameState.timeLeft = 60;
+            const bar = document.getElementById('timerBar');
+            if (bar && gameState.mode !== 'timeattack') bar.classList.add('hidden');
+        }
+
+        // タイマー表示更新
+        function updateTimerDisplay() {
+            const el = document.getElementById('timerDisplay');
+            if (!el) return;
+            el.textContent = gameState.timeLeft;
+            el.classList.toggle('warning', gameState.timeLeft <= 10);
+        }
+
         // ゲームリセット
         function resetGame() {
             // スコアがあれば履歴に保存
             if (gameState.score > 0) {
                 saveToHistory();
             }
+
+            // タイマー停止
+            stopTimer();
 
             // ゲーム状態をリセット
             gameState.score = 0;
@@ -1873,7 +2171,12 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             gameState.placedBlocks = [];
             gameState.isGameOver = false;
             gameState.generation++;   // 競合バグ防止: 古いタイマーを無効化
+            gameState.lastPlacedAt = 0;
+            gameState.undoCount = 3;
+            gameState.undoStack = [];
+            updateUndoCountBadge();
             clearSelectedBlock();
+            updateBalanceMeter(0);
             
             // 配置されたブロックを削除
             const canvas = document.getElementById('gameCanvas');
@@ -1898,8 +2201,13 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             // 統計・目盛りを更新
             updateGameStats();
             updateRuler();
+
+            // タイムアタックモードの場合は自動で再スタート
+            if (gameState.mode === 'timeattack') {
+                startTimer();
+            }
         }
-        
+
         // 結果をシェア
         function shareResult() {
             
@@ -1999,11 +2307,21 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             ctx.textAlign = 'right';
             ctx.fillText('🧱 ブロック: ' + (gameState.blocksUsed || 0), 480, 200);
 
+            // 難易度・ベスト比較
+            const diffLabel = DIFFICULTY_CONFIG[gameState.difficulty].label;
+            const bestGap = gameState.bestScore > 0 && score >= gameState.bestScore ? '🏆 NEW RECORD!' : ('Best: ' + gameState.bestScore);
+            ctx.font = 'bold 13px sans-serif';
+            ctx.fillStyle = '#fde68a';
+            ctx.textAlign = 'left';
+            ctx.fillText('難易度: ' + diffLabel, 40, 230);
+            ctx.textAlign = 'right';
+            ctx.fillText(bestGap, 480, 230);
+
             // URL
-            ctx.font = '12px sans-serif';
-            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.font = '11px sans-serif';
+            ctx.fillStyle = 'rgba(255,255,255,0.4)';
             ctx.textAlign = 'center';
-            ctx.fillText('appadaycreator.com/block-balance-game/', 260, 240);
+            ctx.fillText('appadaycreator.com/block-balance-game/', 260, 248);
 
             const a = document.createElement('a');
             a.href = canvas.toDataURL('image/png');
@@ -2172,6 +2490,7 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
             document.getElementById('goBlocks').textContent = gameState.blocksUsed;
             document.getElementById('goNewBest').classList.toggle('hidden', !isNewBest);
             document.getElementById('gameOverModal').classList.remove('hidden');
+            updateBalanceMeter(0);
         }
 
         // ゲームオーバーモーダルを閉じる
@@ -2183,6 +2502,12 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
         function endGame() {
             if (gameState.isGameOver) return;
             gameState.isGameOver = true;
+
+            // タイムアタック中なら停止
+            stopTimer();
+            if (gameState.mode === 'timeattack') {
+                document.getElementById('timerBar').classList.add('hidden');
+            }
 
             // 履歴に保存
             if (gameState.score > 0) {
@@ -2234,52 +2559,51 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
         
         // ゲームループ（定期的にゲーム状態をチェック）
         setInterval(() => {
-            if (gameState.placedBlocks.length > 0) {
-                // 安定性チェック
-                const stability = physics.checkStability(gameState.placedBlocks);
+            if (gameState.placedBlocks.length === 0) return;
+            if (gameState.isGameOver) return;
 
-                // グラグラ演出（stabilityが0.8未満で適用、0.8以上で解除）
-                if (stability < 0.8) {
-                    gameState.placedBlocks.forEach(block => {
-                        const blockElement = document.querySelector(`[data-block-id="${block.id}"]`);
-                        if (blockElement && !blockElement.classList.contains('wobble-animation')) {
-                            blockElement.classList.add('wobble-animation');
-                        }
-                    });
-                } else {
-                    gameState.placedBlocks.forEach(block => {
-                        const blockElement = document.querySelector(`[data-block-id="${block.id}"]`);
-                        if (blockElement && blockElement.classList.contains('wobble-animation')) {
-                            blockElement.classList.remove('wobble-animation');
-                        }
-                    });
-                }
-                
-                // 不安定な場合は崩壊演出（さらに厳しく）
-                if (stability < 0.7 && gameState.placedBlocks.length > 1) {
+            // 配置直後クールダウン（1.5秒は安定チェックをスキップ）
+            if (Date.now() - gameState.lastPlacedAt < 1500) return;
 
-                    // 崩壊演出
-                    gameState.placedBlocks.forEach((block, index) => {
-                        setTimeout(() => {
-                            const blockElement = document.querySelector(`[data-block-id="${block.id}"]`);
-                            if (blockElement) {
-                                blockElement.classList.remove('wobble-animation');
-                                blockElement.classList.add('falling-animation');
-                                setTimeout(() => {
-                                    blockElement.remove();
-                                }, 1000);
-                            }
-                        }, index * 100);
-                    });
+            // 安定性チェック
+            const stability = physics.checkStability(gameState.placedBlocks);
 
-                    // ゲーム終了（generation で競合防止）
-                    const capturedGen = gameState.generation;
+            // バランスメーター更新
+            updateBalanceMeter(stability);
+
+            // グラグラ演出（0.8未満で揺れ）
+            if (stability < 0.8) {
+                gameState.placedBlocks.forEach(block => {
+                    const el = document.querySelector(`[data-block-id="${block.id}"]`);
+                    if (el && !el.classList.contains('wobble-animation')) el.classList.add('wobble-animation');
+                });
+            } else {
+                gameState.placedBlocks.forEach(block => {
+                    const el = document.querySelector(`[data-block-id="${block.id}"]`);
+                    if (el && el.classList.contains('wobble-animation')) el.classList.remove('wobble-animation');
+                });
+            }
+
+            // 難易度別崩壊閾値で判定
+            const collapseThreshold = DIFFICULTY_CONFIG[gameState.difficulty].threshold;
+            if (stability < collapseThreshold && gameState.placedBlocks.length > 1) {
+                // 崩壊演出
+                gameState.placedBlocks.forEach((block, index) => {
                     setTimeout(() => {
-                        if (gameState.generation === capturedGen) {
-                            endGame();
+                        const el = document.querySelector(`[data-block-id="${block.id}"]`);
+                        if (el) {
+                            el.classList.remove('wobble-animation');
+                            el.classList.add('falling-animation');
+                            setTimeout(() => el.remove(), 1000);
                         }
-                    }, 2000);
-                }
+                    }, index * 100);
+                });
+
+                // ゲーム終了（generation で競合防止）
+                const capturedGen = gameState.generation;
+                setTimeout(() => {
+                    if (gameState.generation === capturedGen) endGame();
+                }, 2000);
             }
         }, 1000);
         
