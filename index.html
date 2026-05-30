@@ -9,7 +9,8 @@
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2563EB">
+<meta name="theme-color" content="#2563EB" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1e3a8a" media="(prefers-color-scheme: dark)">
     <meta name="description" content="物理演算で遊ぶ積み木シミュレーター「ブロックバランス」。リアルな物理演算でブロックを積み上げて、バランス感覚と創造力を育成。無料でプレイできる知育Webアプリ。">
     <meta name="keywords" content="積み木,物理演算,ゲーム,知育,バランス,創造力,子供,教育,パズル,シミュレーター">
     <meta name="author" content="Block Balance">
@@ -427,6 +428,16 @@
             animation: confettiFall linear forwards;
         }
 
+/* ブロックパレット: モバイル3列・デスクトップ6列 */
+@media (min-width: 640px) {
+    #blockPalette { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; }
+}
+/* palette-item-wrap のモバイル余白調整 */
+@media (max-width: 639px) {
+    .palette-item-wrap { padding: 8px 4px; }
+    .block-item { min-width: 40px; min-height: 24px; }
+}
+
 /* Phase 8: Mobile Optimization */
 input, select, textarea { font-size: 16px !important; }
 button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min-width: 48px; touch-action: manipulation; }
@@ -550,7 +561,7 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
                     <span aria-hidden="true" class="mr-2">🧊</span>
                     <span data-i18n="app_name">ブロックバランス</span>
                 </div>
-                <button id="mobileMenuToggle" class="text-gray-700 hover:text-blue-600">
+                <button id="mobileMenuToggle" data-ux="1" class="text-gray-700 hover:text-blue-600">
                     <span aria-hidden="true" class="text-xl">☰</span>
                 </button>
             </div>
@@ -564,7 +575,7 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
             <div class="p-4 border-b">
                 <div class="flex items-center justify-between">
                     <h2 class="text-lg font-semibold" data-i18n="menu">メニュー</h2>
-                    <button id="closeMobileMenu" class="text-gray-500 hover:text-gray-700">
+                    <button id="closeMobileMenu" data-ux="1" class="text-gray-500 hover:text-gray-700">
                         <span aria-hidden="true" class="text-xl">✕</span>
                     </button>
                 </div>
@@ -624,24 +635,24 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
                             <div id="blocksUsedDisplay" class="text-xl font-semibold text-purple-600">0</div>
                         </div>
                         <div class="space-y-2">
-                            <button id="resetGame" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded transition-colors">
+                            <button id="resetGame" data-ux="1" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded transition-colors">
                                 <span aria-hidden="true" class="mr-2">🔄</span>
                                 <span data-i18n="reset_game">ゲームリセット</span>
                             </button>
-                            <button id="undoBtn" onclick="undoLastBlock()" class="w-full bg-amber-500 hover:bg-amber-600 text-white py-2 px-4 rounded transition-colors">
+                            <button id="undoBtn" data-ux="1" onclick="undoLastBlock()" class="w-full bg-amber-500 hover:bg-amber-600 text-white py-2 px-4 rounded transition-colors">
                                 <span aria-hidden="true" class="mr-1">↩</span>
                                 <span>取消</span>
                                 <span id="undoCountBadge" class="undo-count-badge">3</span>
                             </button>
-                            <button id="shareResult" class="w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded transition-colors">
+                            <button id="shareResult" data-ux="1" class="w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded transition-colors">
                                 <span aria-hidden="true" class="mr-2">📤</span>
                                 <span data-i18n="share_result">結果をシェア</span>
                             </button>
-                            <button id="downloadCard" onclick="downloadBlockCard()" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4 rounded transition-colors">
+                            <button id="downloadCard" data-ux="1" onclick="downloadBlockCard()" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4 rounded transition-colors">
                                 <span aria-hidden="true" class="mr-2">📸</span>
                                 <span>📸 カード保存</span>
                             </button>
-                            <button id="showHistory" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition-colors">
+                            <button id="showHistory" data-ux="1" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition-colors">
                                 <span aria-hidden="true" class="mr-2">📋</span>
                                 <span data-i18n="show_history">履歴を表示</span>
                             </button>
@@ -681,13 +692,13 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
                             <div class="flex flex-wrap items-center gap-2 mb-3">
                                 <div class="flex items-center gap-1">
                                     <span class="text-xs text-gray-500 font-semibold mr-1">難易度:</span>
-                                    <button class="diff-btn" id="diffEasy" onclick="setDifficulty('easy')">かんたん</button>
-                                    <button class="diff-btn active-normal" id="diffNormal" onclick="setDifficulty('normal')">ふつう</button>
-                                    <button class="diff-btn" id="diffHard" onclick="setDifficulty('hard')">むずかしい</button>
+                                    <button class="diff-btn" data-ux="1" id="diffEasy" onclick="setDifficulty('easy')">かんたん</button>
+                                    <button class="diff-btn active-normal" data-ux="1" id="diffNormal" onclick="setDifficulty('normal')">ふつう</button>
+                                    <button class="diff-btn" data-ux="1" id="diffHard" onclick="setDifficulty('hard')">むずかしい</button>
                                 </div>
                                 <div class="flex items-center gap-1 ml-auto">
-                                    <button class="mode-btn" id="modeNormal" onclick="setMode('normal')">通常</button>
-                                    <button class="mode-btn" id="modeTimeAttack" onclick="setMode('timeattack')">⏱ 60秒</button>
+                                    <button class="mode-btn" data-ux="1" id="modeNormal" onclick="setMode('normal')">通常</button>
+                                    <button class="mode-btn" data-ux="1" id="modeTimeAttack" onclick="setMode('timeattack')">⏱ 60秒</button>
                                 </div>
                             </div>
 
@@ -741,7 +752,7 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
                                     <div class="flex items-center gap-2">
                                         <span class="text-xs text-gray-400 desktop-only">クリックまたはドラッグで配置</span>
                                         <span class="text-xs text-gray-400 mobile-only">タップで選択→キャンバスをタップ</span>
-                                        <button id="soundToggle" class="sound-btn" title="効果音のON/OFF" aria-label="効果音のON/OFF">🔊</button>
+                                        <button id="soundToggle" data-ux="1" class="sound-btn" title="効果音のON/OFF" aria-label="効果音のON/OFF">🔊</button>
                                     </div>
                                 </div>
                                 <!-- モバイル選択中ブロック表示 -->
@@ -749,7 +760,7 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
                                     <span>ブロック選択中 — タップして配置</span>
                                     <button onclick="clearSelectedBlock()" class="text-blue-400 hover:text-blue-700 font-bold ml-2 text-base">✕</button>
                                 </div>
-                                <div class="grid grid-cols-6 gap-3" id="blockPalette">
+                                <div class="grid gap-3" style="grid-template-columns:repeat(3,1fr);" id="blockPalette">
                                     <!-- 正方形 -->
                                     <div class="palette-item-wrap" title="正方形 48×48（Rキーで回転）">
                                         <div class="block-item block-red rounded cursor-pointer hover:scale-105 transition-transform"
@@ -791,19 +802,19 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
                             
                             <!-- Mobile Controls -->
                             <div class="mobile-only flex space-x-2 mb-6">
-                                <button id="mobileResetGame" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded transition-colors">
+                                <button id="mobileResetGame" data-ux="1" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded transition-colors">
                                     <span aria-hidden="true" class="mr-1">🔄</span>
                                     <span>リセット</span>
                                 </button>
-                                <button onclick="undoLastBlock()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-2 px-4 rounded transition-colors">
+                                <button data-ux="1" onclick="undoLastBlock()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-2 px-4 rounded transition-colors">
                                     <span aria-hidden="true">↩</span>
                                     <span class="text-xs ml-0.5">取消</span>
                                     <span id="mobileUndoCountBadge" class="undo-count-badge">3</span>
                                 </button>
-                                <button id="mobileShareResult" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded transition-colors">
+                                <button id="mobileShareResult" data-ux="1" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded transition-colors">
                                     <span aria-hidden="true">📤</span>
                                 </button>
-                                <button onclick="downloadBlockCard()" class="flex-1 bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4 rounded transition-colors">
+                                <button data-ux="1" onclick="downloadBlockCard()" class="flex-1 bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4 rounded transition-colors">
                                     <span aria-hidden="true">📸</span>
                                 </button>
                             </div>
@@ -876,6 +887,29 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
                                     </div>
                                 </section>
                                 
+                                <section>
+                                    <h2 class="text-xl font-semibold mb-4">キーボードショートカット</h2>
+                                    <div class="bg-gray-50 p-4 rounded-lg overflow-x-auto">
+                                        <table class="w-full text-sm">
+                                            <thead>
+                                                <tr class="border-b border-gray-200">
+                                                    <th class="text-left py-1 pr-4 font-semibold text-gray-600 w-20">キー</th>
+                                                    <th class="text-left py-1 font-semibold text-gray-600">操作</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-gray-100">
+                                                <tr><td class="py-1 pr-4"><kbd class="kbd-hint">R</kbd></td><td class="py-1 text-gray-700">ゲームリセット</td></tr>
+                                                <tr><td class="py-1 pr-4"><kbd class="kbd-hint">Z</kbd></td><td class="py-1 text-gray-700">アンドゥ（直前のブロックを取り消し）</td></tr>
+                                                <tr><td class="py-1 pr-4"><kbd class="kbd-hint">E</kbd></td><td class="py-1 text-gray-700">選択中ブロックを回転</td></tr>
+                                                <tr><td class="py-1 pr-4"><kbd class="kbd-hint">H</kbd></td><td class="py-1 text-gray-700">ゲーム履歴を表示</td></tr>
+                                                <tr><td class="py-1 pr-4"><kbd class="kbd-hint">M</kbd></td><td class="py-1 text-gray-700">効果音のオン/オフ切り替え</td></tr>
+                                                <tr><td class="py-1 pr-4"><kbd class="kbd-hint">1</kbd>〜<kbd class="kbd-hint">6</kbd></td><td class="py-1 text-gray-700">ブロックを番号で選択（1=正方形、2=横長、3=縦長、4=平べったい、5=小、6=大）</td></tr>
+                                                <tr><td class="py-1 pr-4"><kbd class="kbd-hint">Esc</kbd></td><td class="py-1 text-gray-700">モーダルを閉じる / ブロック選択を解除</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </section>
+
                                 <section>
                                     <h2 class="text-xl font-semibold mb-4" data-i18n="tips_title">上達のコツ</h2>
                                     <div class="grid md:grid-cols-2 gap-4">
@@ -1101,9 +1135,9 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
                 </div>
                 <div id="goNewBest" class="hidden text-yellow-500 font-bold text-sm mb-3">🏆 新記録達成！</div>
                 <div class="flex gap-2">
-                    <button onclick="closeGameOver(); resetGame();" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold transition-colors">もう一度</button>
-                    <button onclick="downloadBlockCard();" class="bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-3 rounded-lg font-semibold transition-colors" title="スコアカード保存">📸</button>
-                    <button onclick="closeGameOver(); shareResult();" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg font-semibold transition-colors">シェア</button>
+                    <button data-ux="1" onclick="closeGameOver(); resetGame();" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold transition-colors">もう一度</button>
+                    <button data-ux="1" onclick="downloadBlockCard();" class="bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-3 rounded-lg font-semibold transition-colors" title="スコアカード保存">📸</button>
+                    <button data-ux="1" onclick="closeGameOver(); shareResult();" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg font-semibold transition-colors">シェア</button>
                 </div>
             </div>
         </div>
@@ -1115,14 +1149,14 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
                     <div class="p-6">
                         <div class="flex items-center justify-between mb-3">
                             <h3 class="text-lg font-semibold" data-i18n="history_title">ゲーム履歴</h3>
-                            <button id="closeHistory" class="text-gray-500 hover:text-gray-700">
+                            <button id="closeHistory" data-ux="1" class="text-gray-500 hover:text-gray-700">
                                 <span aria-hidden="true" class="text-xl">✕</span>
                             </button>
                         </div>
                         <div class="flex gap-2 mb-3">
-                            <button id="sortByDate" onclick="renderHistory('date')" class="text-xs px-3 py-1 rounded border border-gray-300 bg-gray-100 font-semibold hover:bg-gray-200">日時順</button>
-                            <button id="sortByScore" onclick="renderHistory('score')" class="text-xs px-3 py-1 rounded border border-blue-400 text-blue-700 font-semibold hover:bg-blue-50">スコア順</button>
-                            <button onclick="clearHistory()" class="text-xs px-3 py-1 rounded border border-red-300 text-red-600 font-semibold hover:bg-red-50 ml-auto">🗑 履歴クリア</button>
+                            <button id="sortByDate" data-ux="1" onclick="renderHistory('date')" class="text-xs px-3 py-1 rounded border border-gray-300 bg-gray-100 font-semibold hover:bg-gray-200">日時順</button>
+                            <button id="sortByScore" data-ux="1" onclick="renderHistory('score')" class="text-xs px-3 py-1 rounded border border-blue-400 text-blue-700 font-semibold hover:bg-blue-50">スコア順</button>
+                            <button data-ux="1" onclick="clearHistory()" class="text-xs px-3 py-1 rounded border border-red-300 text-red-600 font-semibold hover:bg-red-50 ml-auto">🗑 履歴クリア</button>
                         </div>
                         <div id="historyContent" class="space-y-3">
                             <!-- History content will be populated here -->
@@ -2210,7 +2244,7 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
 
             // ベストスコア更新
             if (score > gameState.bestScore) {
-                const isNew = gameState.bestScore > 0;
+                const isNew = gameState.blocksUsed >= 2; // 初回ゲームも含めてconfetti発動
                 gameState.bestScore = score;
                 localStorage.setItem('blockBalanceBest', score);
                 const el = document.getElementById('bestScoreDisplay');
@@ -2814,8 +2848,8 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
         }
         
         // ゲームオーバーモーダルを表示
-        function showGameOver(isTimeout) {
-            const isNewBest = gameState.score > 0 && gameState.score >= gameState.bestScore;
+        function showGameOver(isTimeout, isNewBestRecord, finalScore, finalBest) {
+            const isNewBest = isNewBestRecord || false;
             if (isNewBest) launchConfetti();
             gameState.isGameOver = false;
             // タイムアタックとゲームオーバーで演出を分岐
@@ -2831,7 +2865,7 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
                 if (title) title.textContent = 'ゲームオーバー！';
                 if (subtitle) subtitle.textContent = '塔が崩れてしまいました';
             }
-            document.getElementById('goScore').textContent = gameState.score;
+            document.getElementById('goScore').textContent = finalScore !== undefined ? finalScore : gameState.score;
             document.getElementById('goHeight').textContent = gameState.height;
             document.getElementById('goBlocks').textContent = gameState.blocksUsed;
             document.getElementById('goNewBest').classList.toggle('hidden', !isNewBest);
@@ -2848,6 +2882,11 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
         function endGame(isTimeout) {
             if (gameState.isGameOver) return;
             gameState.isGameOver = true;
+
+            // ゲームオーバー前のスコア・ベストをキャプチャ（showGameOverに渡す）
+            const finalScore = gameState.score;
+            const finalBest = gameState.bestScore;
+            const isNewBestRecord = finalScore > 0 && finalScore >= finalBest && gameState.blocksUsed >= 2;
 
             // コンボリセット
             resetCombo();
@@ -2873,7 +2912,7 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
                 // リセットされていたらスキップ（競合バグ防止）
                 if (gameState.generation !== capturedGen) return;
 
-                showGameOver(isTimeout);
+                showGameOver(isTimeout, isNewBestRecord, finalScore, finalBest);
 
                 // DOM上の残留ブロックを明示的削除
                 const canvas = document.getElementById('gameCanvas');
