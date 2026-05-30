@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#3B82F6">
+<meta name="theme-color" content="#2563EB">
     <meta name="description" content="物理演算で遊ぶ積み木シミュレーター「ブロックバランス」。リアルな物理演算でブロックを積み上げて、バランス感覚と創造力を育成。無料でプレイできる知育Webアプリ。">
     <meta name="keywords" content="積み木,物理演算,ゲーム,知育,バランス,創造力,子供,教育,パズル,シミュレーター">
     <meta name="author" content="Block Balance">
@@ -1253,9 +1253,9 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
         
         // 難易度設定
         const DIFFICULTY_CONFIG = {
-            easy:   { threshold: 0.5,  scoreMultiplier: 1.0, label: 'かんたん' },
-            normal: { threshold: 0.65, scoreMultiplier: 1.5, label: 'ふつう' },
-            hard:   { threshold: 0.8,  scoreMultiplier: 2.0, label: 'むずかしい' }
+            easy:   { threshold: 0.5,  scoreMultiplier: 1.0, label: 'かんたん', undoCount: 5 },
+            normal: { threshold: 0.65, scoreMultiplier: 1.5, label: 'ふつう',   undoCount: 3 },
+            hard:   { threshold: 0.8,  scoreMultiplier: 2.0, label: 'むずかしい', undoCount: 1 }
         };
 
         // ゲーム状態管理
@@ -1500,16 +1500,18 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
                 ruler.appendChild(line);
                 if (u % 2 === 0 || totalUnits <= 10) ruler.appendChild(tick);
             }
-            // ベストスコアラインを表示
+            // ベストスコアラインを表示（スコアから高さ単位を逆算）
             if (gameState.bestScore > 0) {
-                const bestH = (gameState.bestScore - gameState.blocksUsed * 5 - 50) / 10; // おおよその高さ
-                const bestYFromBottom = Math.min(bestH * unitPx, h - 4);
+                // score = height * 10 * diffMultiplier + α なので height ≈ score / (10 * multiplier)
+                const multiplier = DIFFICULTY_CONFIG[gameState.difficulty].scoreMultiplier;
+                const estimatedHeight = Math.round(gameState.bestScore / (10 * multiplier));
+                const bestYFromBottom = Math.min(estimatedHeight * unitPx, h - 4);
                 if (bestYFromBottom > 0) {
                     const bestLine = document.createElement('div');
                     bestLine.className = 'ruler-best-line';
                     bestLine.style.bottom = bestYFromBottom + 'px';
                     bestLine.style.position = 'absolute';
-                    bestLine.title = 'ベスト記録';
+                    bestLine.title = `ベスト記録: ${gameState.bestScore}pt`;
                     ruler.appendChild(bestLine);
                 }
             }
@@ -1729,20 +1731,26 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
             const blocks = palette.querySelectorAll('.block-item');
 
             blocks.forEach(block => {
-                // デスクトップ: ダブルクリックで回転、シングルクリックでドラッグ
-                let clickTimer = null;
+                // デスクトップ: mousedown即ドラッグ、長押し(250ms)で回転
+                let longPressTimer = null;
+                let dragStarted = false;
+
                 block.addEventListener('mousedown', (e) => {
-                    if (clickTimer) {
-                        clearTimeout(clickTimer);
-                        clickTimer = null;
-                        // ダブルクリック: 回転
-                        rotateBlockElement(block);
-                    } else {
-                        clickTimer = setTimeout(() => {
-                            clickTimer = null;
-                            startDrag(e);
-                        }, 220);
-                    }
+                    if (e.button !== 0) return;
+                    dragStarted = false;
+                    longPressTimer = setTimeout(() => {
+                        longPressTimer = null;
+                        // 長押し = 回転（ドラッグ未開始の場合）
+                        if (!dragStarted) rotateBlockElement(block);
+                    }, 250);
+                    // 即ドラッグ開始
+                    startDrag(e);
+                    dragStarted = true;
+                });
+
+                block.addEventListener('mouseup', () => {
+                    if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+                    dragStarted = false;
                 });
 
                 // モバイル: タップで選択、ダブルタップで回転
@@ -1853,40 +1861,54 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
             const canvas = document.getElementById('gameCanvas');
 
             canvas.addEventListener('mousemove', handleDrag);
-            canvas.addEventListener('touchmove', handleDrag, { passive: false });
             canvas.addEventListener('mouseup', endDrag);
-            canvas.addEventListener('touchend', endDrag);
             canvas.addEventListener('mouseleave', () => { hideGhostBlock(); endDrag(); });
 
-            // モバイルタップ配置（selectedBlockがある時）
+            // クリックでモバイル選択済みブロックを配置（タッチデバイスではtouchendが先行するため除外）
             canvas.addEventListener('click', handleCanvasClick);
-            canvas.addEventListener('touchend', handleCanvasTouchTap);
 
-            // モバイル: 選択中ブロックのゴースト追従
+            // touchmoveは1つだけ登録（ドラッグ中はhandleDrag、選択中はゴースト追従）
             canvas.addEventListener('touchmove', (e) => {
-                if (gameState.selectedBlock && !gameState.isDragging) {
-                    e.preventDefault();
+                e.preventDefault();
+                if (gameState.isDragging) {
+                    handleDrag(e);
+                } else if (gameState.selectedBlock) {
                     const t = e.touches[0];
                     const rect = canvas.getBoundingClientRect();
                     const x = t.clientX - rect.left;
-                    // 一時的にdraggedBlockをセットしてゴースト更新
                     gameState.draggedBlock = { ...gameState.selectedBlock };
                     updateGhostBlock(x, t.clientY - rect.top);
                     gameState.draggedBlock = null;
                 }
             }, { passive: false });
 
-            // ドラッグ開始時のデフォルト防止
+            // touchend: ドラッグ終了 or タップ配置（どちらか1つのみ実行）
+            canvas.addEventListener('touchend', (e) => {
+                if (gameState.isDragging) {
+                    endDrag(e);
+                } else {
+                    handleCanvasTouchTap(e);
+                }
+            });
+
             canvas.addEventListener('touchstart', (e) => {
                 if (gameState.isDragging) e.preventDefault();
+                // タップ移動量チェック用に開始座標を記録
+                if (e.touches[0]) {
+                    _touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                    _lastTouchTime = Date.now();
+                }
             }, { passive: false });
-            canvas.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
             createGhostBlock();
         }
 
+        // タッチイベント後のclickを無視するためのフラグ
+        let _suppressNextClick = false;
+
         // キャンバスクリックでモバイル選択済みブロックを配置
         function handleCanvasClick(e) {
+            if (_suppressNextClick) { _suppressNextClick = false; return; }
             if (gameState.isDragging) return;
             if (!gameState.selectedBlock) return;
             const canvas = document.getElementById('gameCanvas');
@@ -1901,14 +1923,16 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
 
         // タッチタップでモバイル配置（短いタップのみ）
         let _lastTouchTime = 0;
+        let _touchStartPos = { x: 0, y: 0 };
         let _lastTouchPos = { x: 0, y: 0 };
         function handleCanvasTouchTap(e) {
             if (!gameState.selectedBlock) return;
-            if (gameState.isDragging) return;
             const t = e.changedTouches[0];
             const dt = Date.now() - _lastTouchTime;
-            // タップと判定（短い時間、少ない移動）
-            if (dt < 500) {
+            const dx = Math.abs(t.clientX - _touchStartPos.x);
+            const dy = Math.abs(t.clientY - _touchStartPos.y);
+            // タップ判定: 500ms以内 & 移動量15px以下
+            if (dt < 500 && dx < 15 && dy < 15) {
                 const canvas = document.getElementById('gameCanvas');
                 const rect = canvas.getBoundingClientRect();
                 const x = t.clientX - rect.left;
@@ -1918,6 +1942,9 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
                     placeBlock(x, y);
                     gameState.draggedBlock = null;
                     clearSelectedBlock();
+                    // タッチ後のclickイベントでの二重配置を防ぐ
+                    _suppressNextClick = true;
+                    setTimeout(() => { _suppressNextClick = false; }, 400);
                 }
             }
             _lastTouchTime = Date.now();
@@ -2316,6 +2343,9 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
                 resetGame();
             }
             gameState.difficulty = diff;
+            // 難易度に応じたアンドゥ回数を設定
+            gameState.undoCount = DIFFICULTY_CONFIG[diff].undoCount;
+            updateUndoCountBadge();
             ['diffEasy','diffNormal','diffHard'].forEach(id => {
                 const el = document.getElementById(id);
                 if (!el) return;
@@ -2425,7 +2455,7 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
             gameState.isGameOver = false;
             gameState.generation++;   // 競合バグ防止: 古いタイマーを無効化
             gameState.lastPlacedAt = 0;
-            gameState.undoCount = 3;
+            gameState.undoCount = DIFFICULTY_CONFIG[gameState.difficulty].undoCount;
             gameState.undoStack = [];
             updateUndoCountBadge();
             clearSelectedBlock();
@@ -2683,9 +2713,9 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
             
             gameState.gameHistory.unshift(record);
             
-            // 最新10件のみ保持
-            if (gameState.gameHistory.length > 10) {
-                gameState.gameHistory = gameState.gameHistory.slice(0, 10);
+            // 最新30件のみ保持
+            if (gameState.gameHistory.length > 30) {
+                gameState.gameHistory = gameState.gameHistory.slice(0, 30);
             }
             
             localStorage.setItem('blockBalanceHistory', JSON.stringify(gameState.gameHistory));
