@@ -6,8 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ブロックバランス - 物理演算積み木ゲーム | 創造力とバランス感覚を育む知育アプリ</title>
 <!-- phase8-favicon -->
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" type="image/svg+xml" href="./favicon.svg">
+<link rel="icon" type="image/png" href="./assets/icon-192x192.png">
+<link rel="apple-touch-icon" href="./assets/icon-192x192.png">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2563EB" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1e3a8a" media="(prefers-color-scheme: dark)">
@@ -26,7 +27,7 @@
     <meta property="og:url" content="https://appadaycreator.com/block-balance-game/">
     <meta property="og:title" content="ブロックバランス - 物理演算積み木ゲーム | 創造力とバランス感覚を育む知育アプリ">
     <meta property="og:description" content="物理演算で遊ぶ積み木シミュレーター。創造力とバランス感覚を育む知育アプリ。">
-    <meta property="og:image" content="https://appadaycreator.com/block-balance-game/assets/ogp-image.jpg">
+    <meta property="og:image" content="https://appadaycreator.com/block-balance-game/ogp.png">
 <meta property="og:site_name" content="appadaycreator" />
     
     <!-- Twitter -->
@@ -34,7 +35,7 @@
     <meta property="twitter:url" content="https://appadaycreator.com/block-balance-game/">
     <meta property="twitter:title" content="ブロックバランス - 物理演算積み木ゲーム">
     <meta property="twitter:description" content="物理演算で遊ぶ積み木シミュレーター。創造力とバランス感覚を育む知育アプリ。">
-    <meta property="twitter:image" content="https://appadaycreator.com/block-balance-game/assets/ogp-image.jpg">
+    <meta property="twitter:image" content="https://appadaycreator.com/block-balance-game/ogp.png">
     
     <!-- PWA -->
                 
@@ -414,6 +415,22 @@
         }
         .combo-pop { animation: comboPop 0.3s ease-out; }
 
+        /* コンボタイムバー */
+        .combo-timer-bar {
+            height: 3px;
+            background: #fde68a;
+            border-radius: 2px;
+            margin-top: 3px;
+            transform-origin: left;
+        }
+        @keyframes comboTimerShrink {
+            from { transform: scaleX(1); }
+            to { transform: scaleX(0); }
+        }
+        .combo-timer-bar.active {
+            animation: comboTimerShrink 3.5s linear forwards;
+        }
+
         /* confetti パーティクル */
         @keyframes confettiFall {
             0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
@@ -728,12 +745,13 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
                             <!-- コンボ表示 -->
                             <div id="comboDisplay" class="hidden mb-2 text-center">
                                 <span id="comboText" class="text-lg font-black" style="color:#f59e0b;text-shadow:0 2px 8px rgba(245,158,11,0.5);"></span>
+                                <div id="comboTimerBar" class="combo-timer-bar mx-auto" style="max-width:120px;background:#fde68a;"></div>
                             </div>
 
                             <!-- Game Canvas with ruler -->
                             <div class="canvas-ruler-wrap mb-6">
                                 <div class="canvas-ruler" id="canvasRuler" aria-hidden="true"></div>
-                                <div class="game-canvas flex-1 h-96 relative" id="gameCanvas" style="border-radius: 0 4px 4px 0;">
+                                <div class="game-canvas flex-1 relative" id="gameCanvas" style="border-radius: 0 4px 4px 0; height: clamp(320px, 50vh, 600px);">
                                     <div class="absolute inset-0 flex items-center justify-center text-gray-500" id="canvasHint">
                                         <div class="text-center">
                                             <span aria-hidden="true" class="text-4xl mb-2 block">🧊</span>
@@ -1672,12 +1690,15 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
         function resetCombo() {
             gameState.comboCount = 0;
             if (gameState.comboTimer) { clearTimeout(gameState.comboTimer); gameState.comboTimer = null; }
+            const bar = document.getElementById('comboTimerBar');
+            if (bar) bar.classList.remove('active');
             updateComboDisplay();
         }
 
         function updateComboDisplay() {
             const el = document.getElementById('comboDisplay');
             const txt = document.getElementById('comboText');
+            const bar = document.getElementById('comboTimerBar');
             if (!el || !txt) return;
             if (gameState.comboCount < 2) {
                 el.classList.add('hidden');
@@ -1688,6 +1709,12 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
             txt.classList.remove('combo-pop');
             void txt.offsetWidth; // reflow
             txt.classList.add('combo-pop');
+            // タイムバーアニメーションをリスタート
+            if (bar) {
+                bar.classList.remove('active');
+                void bar.offsetWidth; // reflow
+                bar.classList.add('active');
+            }
         }
 
         function getComboMultiplier() {
@@ -2099,7 +2126,12 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
             gameState.placedBlocks.push(block);
             gameState.blocksUsed++;
             gameState.lastPlacedAt = Date.now();  // クールダウン用タイムスタンプ
-            gameState.undoStack = [block];          // アンドゥ用（最新1件）
+            // アンドゥ用スタック（undoCount最大数分保持）
+            gameState.undoStack.push(block);
+            const maxUndo = DIFFICULTY_CONFIG[gameState.difficulty].undoCount;
+            if (gameState.undoStack.length > maxUndo) {
+                gameState.undoStack.shift();
+            }
 
             // キャンバスヒントを非表示
             const hint = document.getElementById('canvasHint');
@@ -2263,7 +2295,7 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
         // キャンバスの高さを動的に調整（既存ブロックが再落下しないよう補正）
         function adjustCanvasHeight(maxBlockHeight) {
             const canvas = document.getElementById('gameCanvas');
-            const minHeight = 384;
+            const minHeight = Math.min(Math.max(320, Math.floor(window.innerHeight * 0.5)), 600);
             const padding = 100;
             const requiredHeight = maxBlockHeight + padding;
             const newHeight = Math.max(minHeight, requiredHeight);
@@ -2506,8 +2538,9 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
                 }, 1000);
             });
             
-            // キャンバスの高さを元に戻す
-            canvas.style.height = '384px'; // h-96相当
+            // キャンバスの高さを元に戻す（モバイルはビューポート高さの50%、最小320px）
+            const baseH = Math.max(320, Math.floor(window.innerHeight * 0.5));
+            canvas.style.height = Math.min(baseH, 600) + 'px';
 
             // キャンバスヒントを再表示
             const hint = document.getElementById('canvasHint');
@@ -2924,7 +2957,8 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
                 gameState.height = 0;
                 gameState.blocksUsed = 0;
                 updateGameStats();
-                canvas.style.height = '384px';
+                const resetH = Math.min(Math.max(320, Math.floor(window.innerHeight * 0.5)), 600);
+                canvas.style.height = resetH + 'px';
 
                 // キャンバスヒントを再表示
                 const hint = document.getElementById('canvasHint');

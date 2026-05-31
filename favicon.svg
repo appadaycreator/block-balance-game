@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="6" fill="#2563EB"/>
+  <!-- 下段: 横長ブロック -->
+  <rect x="4" y="22" width="24" height="6" rx="2" fill="#60a5fa"/>
+  <!-- 中段: 2ブロック -->
+  <rect x="4" y="15" width="11" height="6" rx="2" fill="#3b82f6"/>
+  <rect x="17" y="15" width="11" height="6" rx="2" fill="#93c5fd"/>
+  <!-- 上段: 1ブロック（中央） -->
+  <rect x="10" y="8" width="12" height="6" rx="2" fill="#bfdbfe"/>
+</svg>
