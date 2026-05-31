@@ -500,7 +500,7 @@ button, .btn, .btn-primary, .option-btn, [role="button"] { min-height: 48px; min
     "headline": "ブロックバランス - 物理演算積み木ゲーム | 創造力とバランス感覚を育む知育アプリ",
     "description": "物理演算で遊ぶ積み木シミュレーター「ブロックバランス」。リアルな物理演算でブロックを積み上げて、バランス感覚と創造力を育成。無料でプレイできる知育Webアプリ。",
     "datePublished": "2026-05-23",
-    "dateModified": "2026-05-23",
+    "dateModified": "2026-05-31",
     "author": {
       "@type": "Organization",
       "name": "appadaycreator"
@@ -824,7 +824,7 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
                                     <span aria-hidden="true" class="mr-1">🔄</span>
                                     <span>リセット</span>
                                 </button>
-                                <button data-ux="1" onclick="undoLastBlock()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-2 px-4 rounded transition-colors">
+                                <button id="mobileUndoBtn" data-ux="1" onclick="undoLastBlock()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-2 px-4 rounded transition-colors">
                                     <span aria-hidden="true">↩</span>
                                     <span class="text-xs ml-0.5">取消</span>
                                     <span id="mobileUndoCountBadge" class="undo-count-badge">3</span>
@@ -1163,7 +1163,7 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
         <!-- History Modal -->
         <div id="historyModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
             <div class="flex items-center justify-center min-h-screen p-4">
-                <div class="bg-white rounded-lg max-w-2xl w-full max-h-96 overflow-y-auto">
+                <div class="bg-white rounded-lg max-w-2xl w-full overflow-y-auto" style="max-height:70vh;">
                     <div class="p-6">
                         <div class="flex items-center justify-between mb-3">
                             <h3 class="text-lg font-semibold" data-i18n="history_title">ゲーム履歴</h3>
@@ -1262,6 +1262,7 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
                 menu: "Menu",
                 game_controls: "Game Controls",
                 current_score: "Current Score",
+                best_score: "Best Score",
                 height: "Height",
                 blocks_used: "Blocks Used",
                 reset_game: "Reset Game",
@@ -2368,8 +2369,14 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
                 const el = document.getElementById(id);
                 if (el) el.textContent = gameState.undoCount;
             });
+            const isDisabled = gameState.undoCount <= 0 || gameState.undoStack.length === 0;
             const btn = document.getElementById('undoBtn');
-            if (btn) btn.disabled = gameState.undoCount <= 0 || gameState.undoStack.length === 0;
+            if (btn) btn.disabled = isDisabled;
+            const mobileBtn = document.getElementById('mobileUndoBtn');
+            if (mobileBtn) {
+                mobileBtn.disabled = isDisabled;
+                mobileBtn.style.opacity = isDisabled ? '0.45' : '';
+            }
         }
 
         // アンドゥ（最後のブロックを1個取り消す）
@@ -2874,7 +2881,9 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
             
             
             // 実際の送信処理は省略（メール送信サービスの連携が必要）
-            alert('お問い合わせありがとうございます。内容を確認次第、ご連絡いたします。');
+            if (typeof showToast === 'function') {
+                showToast('お問い合わせを受け付けました。確認次第ご連絡いたします。', 'success');
+            }
             
             // フォームをリセット
             e.target.reset();

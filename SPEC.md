@@ -8,6 +8,15 @@
 
 ## バージョン履歴
 
+### v1.8.0 (2026-05-31)
+- Service WorkerキャッシュをV1.6→V1.7に更新（v1.7.0コードが正しくキャッシュされるよう修正）
+- manifest.jsonの非標準フィールド `dark_background_color` を削除（W3C PWAマニフェスト仕様準拠）
+- schema.orgの `dateModified` を "2026-05-23" → "2026-05-31" に更新（SEO鮮度シグナル修正）
+- 英語翻訳に `best_score: 'Best Score'` を追加（英語切替時のサイドバーラベル欠落バグ修正）
+- お問い合わせフォームの `alert()` を `showToast()` に変更（UX統一）
+- 履歴モーダル高さを `max-h-96` → `max-height:70vh` に変更（30件スクロールを快適化）
+- モバイルアンドゥボタンにdisabled/opacity制御を追加（残0時のグレーアウト表示）
+
 ### v1.7.0 (2026-05-31)
 - Service WorkerキャッシュをV1.5→V1.6に更新（v1.6.0コードが正しくキャッシュされるよう修正）
 - manifest.jsonにdark_background_color (#1e3a8a) を追加（ダークモードPWAインストール対応）
