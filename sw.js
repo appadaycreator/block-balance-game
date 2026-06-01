@@ -1,4 +1,4 @@
-const CACHE_NAME = 'block-balance-v1.7';
+const CACHE_NAME = 'block-balance-v1.8';
 const OFFLINE_ASSETS = [
   './',
   './index.html',

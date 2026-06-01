@@ -397,6 +397,16 @@
             0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.4); }
             50% { box-shadow: 0 0 0 6px rgba(59,130,246,0); }
         }
+
+        /* モバイル: ブロック選択中キャンバスの脈動ボーダー */
+        @keyframes canvasPulse {
+            0%, 100% { box-shadow: 0 0 0 2px #3b82f6, inset 0 0 0 2px rgba(59,130,246,0.08); }
+            50% { box-shadow: 0 0 0 4px #3b82f6, inset 0 0 0 4px rgba(59,130,246,0.15); }
+        }
+        .game-canvas.block-selected {
+            border-color: #3b82f6 !important;
+            animation: canvasPulse 1s ease-in-out infinite;
+        }
         .block-item.selected {
             animation: selectedPulse 1s infinite;
         }
@@ -1857,6 +1867,9 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
             blockEl.classList.add('selected');
             const hint = document.getElementById('mobileSelectedBlock');
             if (hint) hint.classList.remove('hidden');
+            // キャンバスに配置誘導ハイライトを追加
+            const canvas = document.getElementById('gameCanvas');
+            if (canvas) canvas.classList.add('block-selected');
         }
 
         // モバイルタップ選択を解除
@@ -1865,6 +1878,9 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
             document.querySelectorAll('.block-item.selected').forEach(b => b.classList.remove('selected'));
             const hint = document.getElementById('mobileSelectedBlock');
             if (hint) hint.classList.add('hidden');
+            // キャンバスのハイライトを解除
+            const canvas = document.getElementById('gameCanvas');
+            if (canvas) canvas.classList.remove('block-selected');
         }
         
         // ゴーストブロックを生成
@@ -1904,8 +1920,8 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
             ghost.style.background = colorMap[b.color] || '#6b7280';
             ghost.style.width = b.width + 'px';
             ghost.style.height = b.height + 'px';
-            // X位置: カーソル追随
-            const ghostX = Math.max(0, x - b.width / 2);
+            // X位置: カーソル追随（グリッドスナップ適用）
+            const ghostX = snapToGrid(Math.max(0, x - b.width / 2));
             // Y位置: 落下着地先（実際にドロップした時の位置）
             const landingY = calcLandingY(ghostX, b.width, b.height);
             ghost.style.left = ghostX + 'px';
@@ -2101,6 +2117,12 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
             
         }
         
+        // X座標を10pxグリッドにスナップ（列が整列しやすくなる）
+        const SNAP_GRID = 10;
+        function snapToGrid(val) {
+            return Math.round(val / SNAP_GRID) * SNAP_GRID;
+        }
+
         // ブロックを配置
         function placeBlock(x, y) {
             if (!gameState.draggedBlock) return;
@@ -2118,10 +2140,10 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
                 velocityY: 0
             };
 
-            // 画面範囲内に制限
+            // 画面範囲内に制限 + グリッドスナップ
             const canvas = document.getElementById('gameCanvas');
             const rect = canvas.getBoundingClientRect();
-            block.x = Math.max(0, Math.min(rect.width - block.width, block.x));
+            block.x = snapToGrid(Math.max(0, Math.min(rect.width - block.width, block.x)));
             block.y = Math.max(0, Math.min(rect.height - block.height, block.y));
 
             gameState.placedBlocks.push(block);
@@ -2607,7 +2629,7 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
         function fallbackShare(text) {
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(text).then(() => {
-                    alert('結果をクリップボードにコピーしました！');
+                    showToast('クリップボードにコピーしました！', 'success');
                 }).catch(err => {
                     console.error('Clipboard copy failed', err);
                     showShareModal(text);
