@@ -1,4 +1,5 @@
-const CACHE_NAME = 'block-balance-v1.8';
+// デプロイ時にバージョン番号をインクリメント: v1.9, v2.0 等
+const CACHE_NAME = 'block-balance-v1.9';
 const OFFLINE_ASSETS = [
   './',
   './index.html',
