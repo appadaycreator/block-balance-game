@@ -10,8 +10,7 @@
 <link rel="icon" type="image/png" href="./assets/icon-192x192.png">
 <link rel="apple-touch-icon" href="./assets/icon-192x192.png">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2563EB" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1e3a8a" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#2563EB">
     <meta name="description" content="物理演算で遊ぶ積み木シミュレーター「ブロックバランス」。リアルな物理演算でブロックを積み上げて、バランス感覚と創造力を育成。無料でプレイできる知育Webアプリ。">
     <meta name="keywords" content="積み木,物理演算,ゲーム,知育,バランス,創造力,子供,教育,パズル,シミュレーター">
     <meta name="author" content="Block Balance">
@@ -65,7 +64,8 @@
     <!-- End Google AdSense -->
     
     <!-- Tailwind CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"></noscript>
     
     <style>
         .font-size-xs { font-size: 0.75rem; }
@@ -90,8 +90,8 @@
         }
         
         .game-canvas {
-            border: 2px solid #e5e7eb;
-            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            border: 2px solid #bfdbfe;
+            background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 60%, #bfdbfe 100%);
             position: relative;
             overflow: hidden;
         }
@@ -212,8 +212,8 @@
         /* キャンバスグリッドライン */
         .game-canvas {
             background-image:
-                linear-gradient(rgba(156,163,175,0.2) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(156,163,175,0.12) 1px, transparent 1px);
+                linear-gradient(rgba(147,197,253,0.25) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(147,197,253,0.15) 1px, transparent 1px);
             background-size: 50px 50px;
         }
         /* 高さ目盛りラッパー */
@@ -225,8 +225,8 @@
             width: 32px;
             flex-shrink: 0;
             position: relative;
-            background: rgba(243,244,246,0.8);
-            border: 1px solid #e5e7eb;
+            background: rgba(219,234,254,0.8);
+            border: 1px solid #bfdbfe;
             border-right: none;
             border-radius: 4px 0 0 4px;
             overflow: hidden;
@@ -545,7 +545,7 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
 @media(max-width:640px){[class*=max-w],[class*=container],[class*=wrapper]{padding:12px 16px!important;}button,[class*=btn]{width:100%;font-size:15px;}}
 </style>
 </head>
-<body class="bg-gray-50 font-sans"><a href="#main" class="sr-only">本文へスキップ</a>
+<body class="bg-white font-sans"><a href="#main" class="sr-only">本文へスキップ</a>
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TXQGZRF9"
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -3210,8 +3210,8 @@ document.readyState==='loading'?document.addEventListener('DOMContentLoaded',ini
 })();
 </script>
 
-<div style="border-top:1px solid #e5e7eb;padding:18px 16px 22px;background:#f9fafb;">
-  <p style="text-align:center;font-size:10px;font-weight:700;letter-spacing:0.12em;color:#9ca3af;text-transform:uppercase;margin:0 0 12px;">Sponsored Links</p>
+<div style="border-top:1px solid #e5e7eb;padding:14px 16px 18px;background:#fff;">
+  <p style="text-align:center;font-size:11px;font-weight:600;color:#94a3b8;margin:0 0 10px;">スポンサーリンク</p>
   <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:700px;margin:0 auto;">
     <a href="https://px.a8.net/svt/ejp?a8mat=4B3WJ6+FQ9JMY+1LP8+BY642" rel="nofollow noopener noreferrer" target="_blank" style="display:inline-block;padding:5px 12px;background:#fff;border:1px solid #d1d5db;border-radius:20px;font-size:12px;color:#4b5563;text-decoration:none;white-space:nowrap;">日々の生活にハッピーをプラス！《ハピタス》</a><img border="0" width="1" height="1" src="https://www14.a8.net/0.gif?a8mat=4B3WJ6+FQ9JMY+1LP8+BY642" alt="">
     <a href="https://px.a8.net/svt/ejp?a8mat=4B3WJ7+18PTPM+1O96+699KI" rel="nofollow noopener noreferrer" target="_blank" style="display:inline-block;padding:5px 12px;background:#fff;border:1px solid #d1d5db;border-radius:20px;font-size:12px;color:#4b5563;text-decoration:none;white-space:nowrap;">《ヨガ》をはじめてみませんか？ホットヨガスタジオLAVA</a><img border="0" width="1" height="1" src="https://www12.a8.net/0.gif?a8mat=4B3WJ7+18PTPM+1O96+699KI" alt="">
@@ -3224,13 +3224,13 @@ document.readyState==='loading'?document.addEventListener('DOMContentLoaded',ini
 </div>
 <footer style="text-align:center;padding:16px;"><p style="text-align:center;font-size:12px;color:#9ca3af;margin:8px 0 0;">© 2026 AppADayCreator. All rights reserved.</p>
 <!-- Related Services -->
-<section style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
-  <h3 style="font-size: 18px; margin-bottom: 15px;">関連サービス</h3>
+<section style="margin-top:28px;padding:20px 16px;background:#f8fafc;border-radius:12px;">
+  <h3 style="font-size:14px;font-weight:700;color:#64748b;margin-bottom:12px;letter-spacing:0.03em;">関連サービス</h3>
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
-    <a href="https://appadaycreator.com/kanji-tower-defense/" class="related-link">漢字タワーディフェンス「文字城防衛」</a>
-    <a href="https://appadaycreator.com/codebreaker-puzzle/" class="related-link">暗号解読パズル「コードブレイカー」</a>
-    <a href="https://appadaycreator.com/nanpure-quest/" class="related-link">数独バトル「ナンプレクエスト」</a>
-    <a href="https://appadaycreator.com/chemical-quest/" class="related-link">化学式パズル「ケミカルクエスト」</a>
+    <a href="https://appadaycreator.com/math-maze-puzzle/" class="related-link">暗算パズル無料で楽しめる算数・数学ゲーム</a>
+    <a href="https://appadaycreator.com/math-quiz-speed/" class="related-link">算数・数学クイズゲーム</a>
+    <a href="https://appadaycreator.com/speed-math-challenge/" class="related-link">暗算スピードチャレンジ</a>
+    <a href="https://appadaycreator.com/math-drill-game/" class="related-link">マスドリル</a>
   </div>
 </section>
 
@@ -3264,10 +3264,10 @@ document.readyState==='loading'?document.addEventListener('DOMContentLoaded',ini
     <!-- phase9-related-links -->
     <div class="card p-5 mb-4">
       <h3 class="font-bold text-gray-700 mb-2 text-sm">🔗 関連サービス</h3>
-      <a href="https://appadaycreator.com/board-game-advisor/" class="block text-sm text-indigo-600 hover:underline py-1">→ ボードゲーム選び診断無料診断・アドバイス</a>
-      <a href="https://appadaycreator.com/cellular-adventure-rpg/" class="block text-sm text-indigo-600 hover:underline py-1">→ 細胞の冒険生物・理科を楽しく学ぶライフゲームRPG</a>
-      <a href="https://appadaycreator.com/chemical-quest/" class="block text-sm text-indigo-600 hover:underline py-1">→ 化学式パズル元素記号で遊んで理科が得意になる</a>
-      <a href="https://appadaycreator.com/codebreaker-puzzle/" class="block text-sm text-indigo-600 hover:underline py-1">→ 暗号解読パズル無料で楽しめる謎解きゲーム</a>
+      <a href="https://appadaycreator.com/math-maze-puzzle/" class="block text-sm text-indigo-600 hover:underline py-1">→ 暗算パズル無料で楽しめる算数・数学ゲーム</a>
+      <a href="https://appadaycreator.com/math-quiz-speed/" class="block text-sm text-indigo-600 hover:underline py-1">→ 算数・数学クイズゲーム</a>
+      <a href="https://appadaycreator.com/speed-math-challenge/" class="block text-sm text-indigo-600 hover:underline py-1">→ 暗算スピードチャレンジ</a>
+      <a href="https://appadaycreator.com/math-drill-game/" class="block text-sm text-indigo-600 hover:underline py-1">→ マスドリル</a>
     </div>
     <!-- rakuten-affiliate-block -->
     <div style="border:1px solid #BF0000;background:#fff9f9;border-radius:10px;padding:14px;margin:12px auto;max-width:480px;text-align:center;">
